@@ -1,0 +1,15 @@
+/*
+    Footer - Dashboard & Home
+*/
+
+.footer {
+    padding: 1rem 1.5rem;
+    background: var(--bg-light);
+    border-top: 1px solid var(--border-light);
+}
+
+.footer__text {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}

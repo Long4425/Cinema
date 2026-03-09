@@ -1,0 +1,230 @@
+/*
+    Profile page - Quản lý hồ sơ cá nhân
+*/
+
+.profile-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--primary-light) 100%);
+}
+
+.profile-container {
+    width: 100%;
+    max-width: 480px;
+}
+
+.profile-header {
+    margin-bottom: 1.5rem;
+}
+
+.profile-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.profile-back:hover {
+    text-decoration: underline;
+}
+
+.profile-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.profile-brand__logo {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+}
+
+.profile-brand__logo svg {
+    width: 28px;
+    height: 28px;
+}
+
+.profile-brand__name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.profile-card {
+    background: var(--bg-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(13, 110, 253, 0.08);
+    padding: 2rem;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-avatar__initials {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+}
+
+.profile-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0 0 0.25rem 0;
+}
+
+.profile-email {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 0 0.5rem 0;
+}
+
+.profile-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 6px;
+    margin-right: 0.5rem;
+}
+
+.profile-badge--CUSTOMER {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+.profile-badge--CASHIER {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.profile-badge--MANAGER {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.profile-badge--ADMIN {
+    background: #fce7f3;
+    color: #9d174d;
+}
+
+.profile-tier,
+.profile-points {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.profile-form {
+    margin-bottom: 2rem;
+}
+
+.profile-form__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0 0 1rem 0;
+}
+
+.profile-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.profile-form .btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.profile-form .btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.profile-form .btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.profile-form .btn-secondary {
+    background: var(--bg-light);
+    color: var(--text-dark);
+    border: 1px solid var(--border-light);
+}
+
+.profile-form .btn-secondary:hover {
+    background: var(--bg-hover);
+}
+
+.profile-form--password {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.profile-google-notice {
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.profile-google-notice p {
+    margin: 0;
+}
+
+.profile-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+}
+
+.profile-logout {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.profile-logout:hover {
+    color: #b91c1c;
+    text-decoration: underline;
+}

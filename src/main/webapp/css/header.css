@@ -1,0 +1,94 @@
+/*
+    Header - Dashboard & Home
+*/
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    background: linear-gradient(135deg, var(--primary-darker) 0%, var(--primary-dark) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header__brand {
+    display: flex;
+    align-items: center;
+}
+
+.header__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.header__logo:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.header__logo svg {
+    color: white;
+}
+
+.header__name {
+    color: white;
+}
+
+.header__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header__user {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.header__role {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.header__link {
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.header__link:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.header__link--logout {
+    opacity: 0.9;
+}
+
+/* Home header - có thêm nav */
+.header--home .header__nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header__nav-link {
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.header__nav-link:hover {
+    color: white;
+}
