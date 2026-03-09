@@ -31,7 +31,13 @@ public class LoginServlet extends HttpServlet {
         }
         HttpSession session = req.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
-            resp.sendRedirect(req.getContextPath() + "/");
+            User user = (User) session.getAttribute("user");
+            String roleCode = (user.getRole() != null) ? user.getRole().getRoleCode() : "";
+            if ("CUSTOMER".equalsIgnoreCase(roleCode)) {
+                resp.sendRedirect(req.getContextPath() + "/home");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/dashboard");
+            }
             return;
         }
         String clientId = getInitParameter("google.client.id");

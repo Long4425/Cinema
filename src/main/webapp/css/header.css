@@ -51,6 +51,19 @@
     gap: 1rem;
 }
 
+.header__nav {
+    margin: 0 2rem;
+}
+
+.header__nav-list {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
 .header__user {
     font-size: 0.9rem;
     font-weight: 500;
@@ -76,13 +89,6 @@
     opacity: 0.9;
 }
 
-/* Home header - có thêm nav */
-.header--home .header__nav {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
 .header__nav-link {
     color: rgba(255, 255, 255, 0.95);
     text-decoration: none;
@@ -91,4 +97,9 @@
 
 .header__nav-link:hover {
     color: white;
+}
+
+.header__nav-link--active {
+    font-weight: 600;
+    border-bottom: 2px solid #ffffff;
 }

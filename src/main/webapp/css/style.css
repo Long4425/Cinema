@@ -11,30 +11,47 @@
    ============================================================ */
 :root {
     /* --- Primary palette (Blue) --- */
-    --primary:          #0d6efd;     /* Main blue                    */
-    --primary-dark:     #0b5ed7;     /* Darker shade (hover, active) */
-    --primary-darker:   #0a58ca;     /* Darkest (header gradient)    */
-    --primary-light:    #e7f1ff;     /* Very light tint (bg active)  */
-    --primary-medium:   #b3d4ff;     /* Medium tint (badges)         */
+    --primary: #0d6efd;
+    /* Main blue                    */
+    --primary-dark: #0b5ed7;
+    /* Darker shade (hover, active) */
+    --primary-darker: #0a58ca;
+    /* Darkest (header gradient)    */
+    --primary-light: #e7f1ff;
+    /* Very light tint (bg active)  */
+    --primary-medium: #b3d4ff;
+    /* Medium tint (badges)         */
 
     /* --- Neutral palette --- */
-    --text-dark:        #1a2e3b;
-    --text-body:        #475569;
-    --text-muted:       #94a3b8;
-    --border-light:     #e2e8f0;
-    --bg-white:         #ffffff;
-    --bg-light:         #f8fafb;
-    --bg-hover:         #f1f5f4;
+    --text-dark: #1a2e3b;
+    --text-body: #475569;
+    --text-muted: #94a3b8;
+    --border-light: #e2e8f0;
+    --bg-white: #ffffff;
+    --bg-light: #f8fafb;
+    --bg-hover: #f1f5f4;
 
     /* --- Layout --- */
-    --header-height:    56px;
-    --sidebar-width-md: 25%;         /* col-md-3 */
-    --sidebar-width-lg: 16.6667%;   /* col-lg-2 */
+    --header-height: 56px;
+    --sidebar-width-md: 25%;
+    /* col-md-3 */
+    --sidebar-width-lg: 16.6667%;
+    /* col-lg-2 */
 }
 
 /* ============================================================
    GLOBAL BASE
    ============================================================ */
-html, body {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
     height: 100%;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-body);
+    background-color: var(--bg-light);
 }

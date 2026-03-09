@@ -66,6 +66,16 @@
     color: var(--primary-dark);
 }
 
+.sidebar__link--active {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.sidebar__link--active .sidebar__icon {
+    color: var(--primary-dark);
+}
+
 .sidebar__link:hover .sidebar__icon {
     color: var(--primary-dark);
 }
