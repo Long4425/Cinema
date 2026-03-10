@@ -1,16 +1,20 @@
 package controller.movie;
 
 import dao.MovieDAO;
+import jakarta.servlet.annotation.MultipartConfig;
 import model.Movie;
 import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.Part;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -18,6 +22,11 @@ import java.util.List;
  * Add/Edit/Delete movies, upload posters/trailers (logic for filenames), age rating.
  */
 @WebServlet(name = "MovieManagementServlet", urlPatterns = {"/manager/movies"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024,     // 1MB
+        maxFileSize = 5 * 1024 * 1024,       // 5MB
+        maxRequestSize = 10 * 1024 * 1024    // 10MB
+)
 public class MovieManagementServlet extends HttpServlet {
 
     private final MovieDAO movieDAO = new MovieDAO();
@@ -101,9 +110,44 @@ public class MovieManagementServlet extends HttpServlet {
         m.setLanguage(req.getParameter("language"));
         m.setAgeRating(req.getParameter("ageRating"));
         m.setDurationMins(Integer.parseInt(req.getParameter("durationMins")));
-        m.setPosterUrl(req.getParameter("posterUrl"));
+        String existingPoster = req.getParameter("existingPosterUrl");
+        String uploadedPoster = trySavePoster(req);
+        m.setPosterUrl(uploadedPoster != null ? uploadedPoster : existingPoster);
         m.setTrailerUrl(req.getParameter("trailerUrl"));
         m.setStatus(req.getParameter("status"));
         return m;
+    }
+
+    private String trySavePoster(HttpServletRequest req) {
+        try {
+            Part posterPart = req.getPart("posterFile");
+            if (posterPart == null || posterPart.getSize() == 0) return null;
+
+            String submittedName = Paths.get(posterPart.getSubmittedFileName()).getFileName().toString();
+            if (submittedName.isBlank()) return null;
+
+            String ext = "";
+            int dot = submittedName.lastIndexOf('.');
+            if (dot >= 0) ext = submittedName.substring(dot).toLowerCase();
+            if (!(ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".webp"))) {
+                return null;
+            }
+
+            String safeBase = submittedName.substring(0, dot >= 0 ? dot : submittedName.length())
+                    .replaceAll("[^a-zA-Z0-9-_]", "_");
+            String fileName = safeBase + "_" + System.currentTimeMillis() + ext;
+
+            String imagesDirPath = req.getServletContext().getRealPath("/images");
+            if (imagesDirPath == null) return null;
+
+            File imagesDir = new File(imagesDirPath);
+            if (!imagesDir.exists() && !imagesDir.mkdirs()) return null;
+
+            File dest = new File(imagesDir, fileName);
+            posterPart.write(dest.getAbsolutePath());
+            return fileName;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

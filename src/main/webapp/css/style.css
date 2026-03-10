@@ -50,8 +50,34 @@
 
 html,
 body {
-    height: 100%;
+    min-height: 100%;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--text-body);
     background-color: var(--bg-light);
+}
+
+/* ============================================================
+   STICKY FOOTER FOR HOME PAGES
+   ============================================================ */
+.home-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.home-main {
+    flex: 1 0 auto;
+    padding-top: var(--header-height);
+}
+
+
+.home-layout .footer {
+    margin-top: auto;
+}
+
+/* Vertical centering utility for main content */
+.home-main--center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

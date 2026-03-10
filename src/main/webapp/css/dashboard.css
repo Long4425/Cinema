@@ -5,6 +5,8 @@
 .dashboard-layout {
     min-height: 100vh;
     padding-top: var(--header-height);
+    display: flex;
+    flex-direction: column;
 }
 
 .dashboard-layout .header {
@@ -25,17 +27,17 @@
     margin-left: 240px;
     padding: 1.5rem;
     background: var(--bg-light);
-    min-height: calc(100vh - var(--header-height) - 60px);
+    flex: 1;
 }
 
 .dashboard-layout .footer {
     margin-left: 240px;
+    margin-top: auto;
 }
 
 /* Home Dashboard / Home Page Styles */
 .home-layout {
     min-height: 100vh;
-    padding-top: var(--header-height);
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
@@ -52,6 +54,17 @@
 .home-main {
     flex: 1;
     padding: 0;
+    padding-top: calc(var(--header-height) + 16px);
+}
+
+.home-layout .footer {
+    margin-top: auto;
+}
+
+.home-main--center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Hero Banner - Full width and responsive */

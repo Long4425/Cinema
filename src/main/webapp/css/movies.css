@@ -1,18 +1,11 @@
-:root {
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --bg-dark: #0f172a;
-    --card-bg: #1e293b;
-    --text-white: #f8fafc;
-    --text-gray: #94a3b8;
-}
+/*
+    Movies pages styles
+    Lưu ý: KHÔNG override :root/body để đồng nhất theme toàn hệ thống (style.css)
+*/
 
-body {
-    background-color: var(--bg-dark);
-    color: var(--text-white);
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    padding: 0;
+:root {
+    --movies-card-bg: var(--bg-white);
+    --movies-muted: var(--text-muted);
 }
 
 .movies-container {
@@ -21,8 +14,12 @@ body {
     padding: 40px 20px;
 }
 
+.movies-page-title {
+    margin-top: 1.25rem;
+}
+
 .search-filter-section {
-    background: var(--card-bg);
+    background: var(--movies-card-bg);
     padding: 24px;
     border-radius: 16px;
     margin-bottom: 40px;
@@ -30,7 +27,8 @@ body {
     flex-wrap: wrap;
     gap: 16px;
     align-items: center;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
 }
 
 .filter-group {
@@ -41,16 +39,23 @@ body {
     min-width: 200px;
 }
 
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .filter-group label {
     font-size: 0.875rem;
-    color: var(--text-gray);
+    color: var(--movies-muted);
     font-weight: 500;
 }
 
 .filter-input {
-    background: #334155;
-    border: 1px solid #475569;
-    color: white;
+    background: var(--bg-white);
+    border: 1px solid var(--border-light);
+    color: var(--text-dark);
     padding: 10px 14px;
     border-radius: 8px;
     outline: none;
@@ -75,7 +80,7 @@ body {
 }
 
 .search-btn:hover {
-    background: var(--primary-hover);
+    background: var(--primary-dark);
 }
 
 .movie-grid {
@@ -85,17 +90,18 @@ body {
 }
 
 .movie-card {
-    background: var(--card-bg);
+    background: var(--movies-card-bg);
     border-radius: 16px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
     position: relative;
+    border: 1px solid var(--border-light);
 }
 
 .movie-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12);
 }
 
 .poster-container {
@@ -143,7 +149,7 @@ body {
 
 .movie-title-en {
     font-size: 0.875rem;
-    color: var(--text-gray);
+    color: var(--movies-muted);
     margin-bottom: 12px;
     white-space: nowrap;
     overflow: hidden;
@@ -154,8 +160,8 @@ body {
     display: flex;
     justify-content: space-between;
     font-size: 0.75rem;
-    color: var(--text-gray);
-    border-top: 1px solid #334155;
+    color: var(--movies-muted);
+    border-top: 1px solid var(--border-light);
     padding-top: 12px;
 }
 
@@ -167,13 +173,14 @@ body {
 /* Detail Page Styles */
 .movie-detail-container {
     max-width: 1000px;
-    margin: 50px auto;
+    margin: 48px auto 48px;
     display: flex;
     gap: 40px;
-    background: var(--card-bg);
+    background: var(--movies-card-bg);
     padding: 40px;
     border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
 }
 
 .detail-poster {
@@ -196,14 +203,14 @@ body {
 .detail-meta-list {
     display: flex;
     gap: 20px;
-    color: var(--text-gray);
+    color: var(--movies-muted);
     font-size: 0.9rem;
     margin-bottom: 24px;
 }
 
 .detail-desc {
     line-height: 1.6;
-    color: #cbd5e1;
+    color: var(--text-body);
     margin-bottom: 30px;
 }
 
@@ -240,17 +247,20 @@ body {
 }
 
 .showtime-item {
-    background: #334155;
-    color: white;
+    background: var(--bg-white);
+    color: var(--text-dark);
     padding: 10px;
     border-radius: 8px;
     text-align: center;
     text-decoration: none;
     transition: all 0.2s;
     font-weight: 500;
+    border: 1px solid var(--border-light);
 }
 
 .showtime-item:hover {
     background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
     transform: translateY(-2px);
 }
