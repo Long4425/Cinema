@@ -36,6 +36,70 @@ public class ShowtimeDAO {
         return showtimes;
     }
 
+    public List<Showtime> findByDateGroupByMovie(LocalDate date) {
+        String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
+                "FROM Showtimes s " +
+                "JOIN Movies m ON s.MovieId = m.MovieId " +
+                "JOIN Rooms r ON s.RoomId = r.RoomId " +
+                "WHERE CAST(s.StartTime AS DATE) = ? " +
+                "ORDER BY m.Title ASC, s.StartTime ASC";
+        List<Showtime> showtimes = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(date));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    showtimes.add(mapShowtime(rs));
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy lịch chiếu theo ngày (gom nhóm theo phim)", e);
+        }
+        return showtimes;
+    }
+
+    public List<Showtime> findAllGroupByMovie() {
+        String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
+                "FROM Showtimes s " +
+                "JOIN Movies m ON s.MovieId = m.MovieId " +
+                "JOIN Rooms r ON s.RoomId = r.RoomId " +
+                "ORDER BY m.Title ASC, s.StartTime ASC";
+        List<Showtime> showtimes = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                showtimes.add(mapShowtime(rs));
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy toàn bộ lịch chiếu (gom nhóm theo phim)", e);
+        }
+        return showtimes;
+    }
+
+    public List<Showtime> findByDateAndMovie(LocalDate date, int movieId) {
+        String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
+                "FROM Showtimes s " +
+                "JOIN Movies m ON s.MovieId = m.MovieId " +
+                "JOIN Rooms r ON s.RoomId = r.RoomId " +
+                "WHERE CAST(s.StartTime AS DATE) = ? AND s.MovieId = ? " +
+                "ORDER BY s.StartTime ASC";
+        List<Showtime> showtimes = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(date));
+            ps.setInt(2, movieId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    showtimes.add(mapShowtime(rs));
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy lịch chiếu theo ngày và phim", e);
+        }
+        return showtimes;
+    }
+
     public List<Showtime> findByMovie(int movieId) {
         String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
                      "FROM Showtimes s " +

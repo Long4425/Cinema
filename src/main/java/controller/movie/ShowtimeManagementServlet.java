@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -59,14 +60,27 @@ public class ShowtimeManagementServlet extends HttpServlet {
     }
 
     private void listShowtimes(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<Showtime> showtimes = showtimeDAO.findByDate(java.time.LocalDate.now()); // Simplify for now
+        String dateStr = req.getParameter("date");
+        LocalDate date = null;
+        if (dateStr != null && !dateStr.isEmpty()) {
+            try {
+                date = LocalDate.parse(dateStr);
+            } catch (Exception ignored) {
+                date = null;
+            }
+        }
+
+        List<Showtime> showtimes = (date == null)
+                ? showtimeDAO.findAllGroupByMovie()
+                : showtimeDAO.findByDateGroupByMovie(date);
         req.setAttribute("showtimes", showtimes);
+        req.setAttribute("date", date);
         req.getRequestDispatcher("/movie/manage-showtimes.jsp").forward(req, resp);
     }
 
     private void showEditForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String idStr = req.getParameter("id");
-        if (idStr != null) {
+        if (idStr != null && !idStr.isBlank()) {
             int id = Integer.parseInt(idStr);
             Showtime s = showtimeDAO.findById(id);
             req.setAttribute("showtime", s);
@@ -111,7 +125,13 @@ public class ShowtimeManagementServlet extends HttpServlet {
         s.setRoomId(Integer.parseInt(req.getParameter("roomId")));
         s.setStartTime(LocalDateTime.parse(req.getParameter("startTime")));
         s.setEndTime(LocalDateTime.parse(req.getParameter("endTime")));
-        s.setBasePrice(new BigDecimal(req.getParameter("basePrice")));
+
+        String priceStr = req.getParameter("basePrice");
+        BigDecimal price = new BigDecimal(priceStr);
+        if (price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Giá cơ bản phải lớn hơn 0.");
+        }
+        s.setBasePrice(price);
         s.setStatus(req.getParameter("status"));
         return s;
     }
