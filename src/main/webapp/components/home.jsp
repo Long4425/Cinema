@@ -16,13 +16,19 @@
         </head>
 
         <body class="home-layout">
-            <jsp:include page="home-header.jsp" />
+            <jsp:include page="header.jsp" />
+
             <main class="home-main">
-                <div class="home-welcome">
-                    <h1>Chào mừng, ${user.fullName}!</h1>
-                    <p>Khám phá phim hay và đặt vé trực tuyến.</p>
-                </div>
+                <!-- Hero Banner Section -->
+                <section class="hero-banner">
+                    <img src="images/cinema_hero_banner.png" alt="Cinema Banner" class="hero-banner__img">
+                </section>
+
+
+
+                
             </main>
+
             <jsp:include page="footer.jsp" />
         </body>
 
