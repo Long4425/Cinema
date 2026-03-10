@@ -23,6 +23,25 @@ public class ChangePasswordServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
 
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        User user = getCurrentUser(req);
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        // Tài khoản Google không có mật khẩu
+        if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+            req.getSession().setAttribute("error", Message.PASSWORD_GOOGLE_USER);
+            resp.sendRedirect(req.getContextPath() + "/profile");
+            return;
+        }
+
+        forwardMessages(req);
+        req.getRequestDispatcher("/profile/change-password.jsp").forward(req, resp);
+    }
+
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         User user = getCurrentUser(req);
         if (user == null) {
@@ -71,5 +90,18 @@ public class ChangePasswordServlet extends HttpServlet {
     private User getCurrentUser(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
         return (session != null) ? (User) session.getAttribute("user") : null;
+    }
+
+    private void forwardMessages(HttpServletRequest req) {
+        String success = (String) req.getSession().getAttribute("success");
+        String error = (String) req.getSession().getAttribute("error");
+        if (success != null) {
+            req.getSession().removeAttribute("success");
+            req.setAttribute("success", success);
+        }
+        if (error != null) {
+            req.getSession().removeAttribute("error");
+            req.setAttribute("error", error);
+        }
     }
 }

@@ -44,74 +44,64 @@
         </c:if>
 
         <div class="profile-card">
-            <div class="profile-info">
-                <div class="profile-avatar">
-                    <span class="profile-avatar__initials">${user.fullName != null && !user.fullName.isEmpty() ? user.fullName.substring(0, 1).toUpperCase() : '?'}</span>
-                </div>
-                <div class="profile-meta">
-                    <h2 class="profile-name">${user.fullName}</h2>
-                    <p class="profile-email">${user.email}</p>
-                    <c:if test="${user.role != null}">
-                        <span class="profile-badge profile-badge--${user.role.roleCode}">${user.role.roleName}</span>
-                    </c:if>
-                    <c:if test="${user.memberTier != null && !user.memberTier.isEmpty()}">
-                        <span class="profile-tier">Hạng: ${user.memberTier}</span>
-                    </c:if>
-                    <c:if test="${user.loyaltyPoint > 0}">
-                        <span class="profile-points">${user.loyaltyPoint} điểm tích lũy</span>
-                    </c:if>
-                </div>
-            </div>
+            <div class="profile-grid">
+                <aside class="profile-sidebar">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <span class="profile-avatar__initials">${user.fullName != null && !user.fullName.isEmpty() ? user.fullName.substring(0, 1).toUpperCase() : '?'}</span>
+                        </div>
+                        <div class="profile-meta">
+                            <h2 class="profile-name">${user.fullName}</h2>
+                            <p class="profile-email">${user.email}</p>
+                            <c:if test="${user.role != null}">
+                                <span class="profile-badge profile-badge--${user.role.roleCode}">${user.role.roleName}</span>
+                            </c:if>
+                            <c:if test="${user.memberTier != null && !user.memberTier.isEmpty()}">
+                                <span class="profile-tier">Hạng: ${user.memberTier}</span>
+                            </c:if>
+                            <c:if test="${user.loyaltyPoint > 0}">
+                                <span class="profile-points">${user.loyaltyPoint} điểm tích lũy</span>
+                            </c:if>
+                        </div>
+                    </div>
 
-            <form class="profile-form" action="<c:url value='/profile'/>" method="post">
-                <h3 class="profile-form__title">Thông tin cá nhân</h3>
-                <div class="form-group">
-                    <label class="form-label" for="fullName">Họ và tên</label>
-                    <input type="text" id="fullName" name="fullName" class="form-input" value="${user.fullName}"
-                           placeholder="Nguyễn Văn A" required autocomplete="name">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="email">Email</label>
-                    <input type="email" id="email" class="form-input" value="${user.email}"
-                           disabled readonly title="Email không thể thay đổi">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="phone">Số điện thoại</label>
-                    <input type="tel" id="phone" name="phone" class="form-input" value="${user.phone}"
-                           placeholder="0912345678" autocomplete="tel">
-                </div>
-                <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
-            </form>
+                    <div class="profile-footer">
+                        <a href="<c:url value='/logout'/>" class="profile-logout">Đăng xuất</a>
+                    </div>
+                </aside>
 
-            <c:if test="${user.hasPassword}">
-            <form class="profile-form profile-form--password" action="<c:url value='/profile/change-password'/>" method="post">
-                <h3 class="profile-form__title">Đổi mật khẩu</h3>
-                <div class="form-group">
-                    <label class="form-label" for="currentPassword">Mật khẩu hiện tại</label>
-                    <input type="password" id="currentPassword" name="currentPassword" class="form-input"
-                           placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="newPassword">Mật khẩu mới</label>
-                    <input type="password" id="newPassword" name="newPassword" class="form-input"
-                           placeholder="Ít nhất 6 ký tự" autocomplete="new-password">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="confirmPassword">Xác nhận mật khẩu mới</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-input"
-                           placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">
-                </div>
-                <button type="submit" class="btn btn-secondary">Đổi mật khẩu</button>
-            </form>
-            </c:if>
-            <c:if test="${user.googleUser}">
-            <div class="profile-google-notice">
-                <p>Tài khoản đăng nhập bằng Google. Để thay đổi mật khẩu, vui lòng cập nhật trong tài khoản Google của bạn.</p>
-            </div>
-            </c:if>
+                <section class="profile-content">
+                    <form class="profile-form" action="<c:url value='/profile'/>" method="post">
+                        <div class="profile-section-header">
+                            <h3 class="profile-form__title">Thông tin cá nhân</h3>
+                            <c:if test="${user.hasPassword}">
+                                <a class="btn btn-secondary profile-change-password" href="<c:url value='/profile/change-password'/>">Đổi mật khẩu</a>
+                            </c:if>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="fullName">Họ và tên</label>
+                            <input type="text" id="fullName" name="fullName" class="form-input" value="${user.fullName}"
+                                   placeholder="Nguyễn Văn A" required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="email">Email</label>
+                            <input type="email" id="email" class="form-input" value="${user.email}"
+                                   disabled readonly title="Email không thể thay đổi">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="phone">Số điện thoại</label>
+                            <input type="tel" id="phone" name="phone" class="form-input" value="${user.phone}"
+                                   placeholder="0912345678" autocomplete="tel">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                    </form>
 
-            <div class="profile-footer">
-                <a href="<c:url value='/logout'/>" class="profile-logout">Đăng xuất</a>
+                    <c:if test="${user.googleUser}">
+                    <div class="profile-google-notice">
+                        <p>Tài khoản đăng nhập bằng Google. Để thay đổi mật khẩu, vui lòng cập nhật trong tài khoản Google của bạn.</p>
+                    </div>
+                    </c:if>
+                </section>
             </div>
         </div>
     </div>
