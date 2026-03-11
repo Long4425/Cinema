@@ -20,13 +20,14 @@
 
             <main class="home-main">
                 <!-- Hero Banner Section -->
-                <section class="hero-banner">
+                <section class="hero-banner" style="position: relative;">
                     <img src="images/cinema_hero_banner.png" alt="Cinema Banner" class="hero-banner__img">
+                    <a href="movies"
+                       class="btn btn-primary"
+                       style="position:absolute; left:5%; top:12%; padding:0.75rem 1.5rem; font-weight:600;">
+                        Đặt vé xem phim
+                    </a>
                 </section>
-
-
-
-                
             </main>
 
             <jsp:include page="footer.jsp" />
