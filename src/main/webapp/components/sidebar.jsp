@@ -254,6 +254,21 @@
                                         </li>
                                     </ul>
                                 </div>
+                                <div class="sidebar__group">
+                                    <span class="sidebar__group-title">Vé & Check-in</span>
+                                    <ul class="sidebar__menu">
+                                        <li>
+                                            <a href="${ctx}/manager/ticket-checkin"
+                                               class="sidebar__link ${uri.contains('/manager/ticket-checkin') ? 'sidebar__link--active' : ''}">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                     stroke-width="2" class="sidebar__icon">
+                                                    <path d="M5 12l5 5l10 -10" />
+                                                </svg>
+                                                Soát vé / Check-in
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </c:if>
 
                             <%-- ADMIN: Quản lý nhân viên, Phân quyền --%>
