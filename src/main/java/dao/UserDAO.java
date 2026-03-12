@@ -75,6 +75,37 @@ public class UserDAO {
         return findByEmail(email).isPresent();
     }
 
+    public void updateActive(int userId, boolean active) {
+        String sql = "UPDATE Users SET IsActive = ? WHERE UserId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, active);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi cập nhật trạng thái user", e);
+        }
+    }
+
+    public java.util.List<User> findAllWithRoles() {
+        String sql = "SELECT u.UserId, u.FullName, u.Email, u.PasswordHash, u.GoogleId, u.Phone, "
+                + "u.MemberTier, u.LoyaltyPoint, u.RoleId, u.IsActive, u.CreatedAt, "
+                + "r.RoleId as rRoleId, r.RoleCode, r.RoleName, r.Description "
+                + "FROM Users u INNER JOIN Roles r ON u.RoleId = r.RoleId "
+                + "ORDER BY u.UserId DESC";
+        java.util.List<User> list = new java.util.ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapUser(rs));
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy danh sách user", e);
+        }
+        return list;
+    }
+
     public User create(User user) {
         String sql = "INSERT INTO Users (FullName, Email, PasswordHash, GoogleId, Phone, MemberTier, LoyaltyPoint, RoleId, IsActive) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
