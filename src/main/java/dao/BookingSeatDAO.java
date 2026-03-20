@@ -42,7 +42,8 @@ public class BookingSeatDAO {
             ps.executeBatch();
             // not strictly needed to read generated ids here
         } catch (ClassNotFoundException | SQLException e) {
-            throw new DataAccessException("Lỗi tạo booking seats", e);
+            String detail = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            throw new DataAccessException("Lỗi tạo booking seats: " + detail, e);
         }
     }
 

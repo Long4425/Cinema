@@ -29,14 +29,14 @@ public class BookingSummaryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String bookingIdStr = req.getParameter("bookingId");
         if (bookingIdStr == null || bookingIdStr.isBlank()) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
             return;
         }
         try {
             int bookingId = Integer.parseInt(bookingIdStr);
             Booking booking = bookingDAO.findById(bookingId);
             if (booking == null) {
-                resp.sendRedirect(req.getContextPath() + "/showtimes");
+                resp.sendRedirect(req.getContextPath() + "/movies");
                 return;
             }
             Showtime showtime = showtimeDAO.findById(booking.getShowtimeId());
@@ -50,7 +50,7 @@ public class BookingSummaryServlet extends HttpServlet {
 
             req.getRequestDispatcher("/booking/summary.jsp").forward(req, resp);
         } catch (NumberFormatException e) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
         }
     }
 

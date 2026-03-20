@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,23 +33,15 @@ public class VNPayReturnServlet extends HttpServlet {
             String fieldName = params.nextElement();
             String fieldValue = request.getParameter(fieldName);
             if (fieldValue != null && !fieldValue.isEmpty()) {
-                String encodedName = java.net.URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString());
-                String encodedValue = java.net.URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString());
-                fields.put(encodedName, encodedValue);
+                fields.put(URLEncoder.encode(fieldName, StandardCharsets.UTF_8),
+                           URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
             }
         }
 
         String vnp_SecureHash = request.getParameter("vnp_SecureHash");
 
-        try {
-            String encodedHashType = java.net.URLEncoder.encode("vnp_SecureHashType", StandardCharsets.UTF_8.toString());
-            String encodedHash = java.net.URLEncoder.encode("vnp_SecureHash", StandardCharsets.UTF_8.toString());
-            fields.remove(encodedHashType);
-            fields.remove(encodedHash);
-        } catch (Exception e) {
-            fields.remove("vnp_SecureHashType");
-            fields.remove("vnp_SecureHash");
-        }
+        fields.remove(URLEncoder.encode("vnp_SecureHashType", StandardCharsets.UTF_8));
+        fields.remove(URLEncoder.encode("vnp_SecureHash", StandardCharsets.UTF_8));
 
         String signValue = VNPayConfig.hashAllFields(fields);
         boolean isValidSignature = signValue.equals(vnp_SecureHash);
@@ -113,6 +106,12 @@ public class VNPayReturnServlet extends HttpServlet {
         request.setAttribute("paymentStatus", paymentStatus);
         request.setAttribute("message", message);
         request.setAttribute("bookingId", bookingId);
+
+        // Xóa booking session sau khi xử lý xong
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute("currentBookingId");
+        }
 
         request.getRequestDispatcher("/booking/payment-result.jsp").forward(request, response);
     }

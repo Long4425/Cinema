@@ -105,7 +105,7 @@ public class ShowtimeDAO {
                      "FROM Showtimes s " +
                      "JOIN Movies m ON s.MovieId = m.MovieId " +
                      "JOIN Rooms r ON s.RoomId = r.RoomId " +
-                     "WHERE s.MovieId = ? AND s.StartTime >= GETDATE() " +
+                     "WHERE s.MovieId = ? AND CAST(s.StartTime AS DATE) = CAST(GETDATE() AS DATE) AND s.StartTime >= GETDATE() " +
                      "ORDER BY s.StartTime ASC";
         List<Showtime> showtimes = new ArrayList<>();
         try (Connection conn = dbContext.getConnection();

@@ -15,22 +15,28 @@
                 <link rel="stylesheet" href="css/footer.css">
                 <link rel="stylesheet" href="css/movies.css">
                 <link rel="stylesheet" href="css/message.css">
+                <link rel="stylesheet" href="css/button.css">
             </head>
 
             <body class="home-layout">
                 <jsp:include page="/components/header.jsp" />
 
-                <main class="home-main home-main--center">
+                <main class="home-main">
                     <div class="movie-detail-container">
+                        <div style="grid-column:1/-1; margin-bottom:0.5rem;">
+                            <a href="${pageContext.request.contextPath}/movies" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:0.4rem;">
+                                &#8592; Quay lại danh sách phim
+                            </a>
+                        </div>
                         <div class="detail-poster">
                             <c:choose>
                                 <c:when test="${not empty movie.posterUrl}">
                                     <img src="images/${movie.posterUrl}" alt="${movie.title}"
-                                        style="width: 100%; border-radius: 16px;">
+                                        style="width: 100%;">
                                 </c:when>
                                 <c:otherwise>
                                     <img src="images/default.jpg" alt="${movie.title}"
-                                        style="width: 100%; border-radius: 16px;">
+                                        style="width: 100%;">
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -72,22 +78,22 @@
                                     <c:when test="${not empty showtimes}">
                                         <div class="showtime-grid">
                                             <c:forEach var="s" items="${showtimes}">
-                                                <a href="booking/seat-selection?id=${s.showtimeId}"
-                                                    class="showtime-item">
-                                                    <fmt:parseDate value="${s.startTime}" pattern="yyyy-MM-dd'T'HH:mm"
-                                                        var="parsedDate" type="both" />
-                                                    <fmt:formatDate value="${parsedDate}" pattern="HH:mm" />
-                                                    <div
-                                                        style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-top:0.25rem;">
+                                                <button type="button"
+                                                    class="showtime-item"
+                                                    data-url="${pageContext.request.contextPath}/booking/seat-selection?id=${s.showtimeId}"
+                                                    data-logged-in="${not empty sessionScope.user}"
+                                                    onclick="handleShowtimeClick(this)">
+                                                    <strong><fmt:formatNumber value="${s.startTime.hour}" minIntegerDigits="2"/>:<fmt:formatNumber value="${s.startTime.minute}" minIntegerDigits="2"/></strong>
+                                                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-top:0.25rem;">
                                                         ${s.room.roomName} (${s.room.roomType})
                                                     </div>
-                                                </a>
+                                                </button>
                                             </c:forEach>
                                         </div>
                                     </c:when>
                                     <c:otherwise>
                                         <div class="cinema-msg cinema-msg--info" style="margin-top:0.5rem;">
-                                            Hiện chưa có lịch chiếu cho phim này.
+                                            Hôm nay chưa có lịch chiếu cho phim này.
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
@@ -96,7 +102,21 @@
                     </div>
                 </main>
 
+
                 <jsp:include page="/components/footer.jsp" />
+            <script>
+                function handleShowtimeClick(btn) {
+                    var loggedIn = btn.getAttribute('data-logged-in') === 'true';
+                    var url = btn.getAttribute('data-url');
+                    if (loggedIn) {
+                        window.location.href = url;
+                    } else {
+                        var loginUrl = '${pageContext.request.contextPath}/login?msg='
+                            + encodeURIComponent('Xin hãy đăng nhập để tiếp tục đặt vé xem phim.');
+                        window.location.href = loginUrl;
+                    }
+                }
+            </script>
             </body>
 
             </html>

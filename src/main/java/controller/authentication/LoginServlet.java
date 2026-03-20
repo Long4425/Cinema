@@ -29,6 +29,10 @@ public class LoginServlet extends HttpServlet {
             req.getSession().removeAttribute("success");
             req.setAttribute("success", success);
         }
+        String msg = req.getParameter("msg");
+        if (msg != null && !msg.isBlank()) {
+            req.setAttribute("error", msg);
+        }
         HttpSession session = req.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
             User user = (User) session.getAttribute("user");

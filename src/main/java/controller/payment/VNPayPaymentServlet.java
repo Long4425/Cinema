@@ -14,11 +14,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @WebServlet(name = "VNPayPaymentServlet", urlPatterns = {"/payment/vnpay"})
@@ -32,7 +31,7 @@ public class VNPayPaymentServlet extends HttpServlet {
             throws ServletException, IOException {
         String bookingIdStr = request.getParameter("bookingId");
         if (bookingIdStr == null || bookingIdStr.isBlank()) {
-            response.sendRedirect(request.getContextPath() + "/showtimes");
+            response.sendRedirect(request.getContextPath() + "/movies");
             return;
         }
 
@@ -40,17 +39,28 @@ public class VNPayPaymentServlet extends HttpServlet {
             int bookingId = Integer.parseInt(bookingIdStr);
             Booking booking = bookingDAO.findById(bookingId);
             if (booking == null) {
-                response.sendRedirect(request.getContextPath() + "/showtimes");
+                response.sendRedirect(request.getContextPath() + "/movies");
                 return;
             }
 
             // Tổng tiền booking tính bằng VND, VNPay dùng đơn vị "đồng x 100"
             BigDecimal amountVnd = booking.getTotalAmount();
-            long amount = amountVnd.multiply(BigDecimal.valueOf(100L)).longValue();
+            if (amountVnd == null) {
+                response.sendRedirect(request.getContextPath() + "/movies");
+                return;
+            }
+
+            // VNPay yêu cầu vnp_Amount là số nguyên (không phải BigDecimal dạng thập phân).
+            BigDecimal amountVndInt = amountVnd.setScale(0, RoundingMode.HALF_UP);
+            long amount = amountVndInt.longValue() * 100L;
+            if (amount <= 0) {
+                response.sendRedirect(request.getContextPath() + "/movies");
+                return;
+            }
 
             String vnp_Version = "2.1.0";
             String vnp_Command = "pay";
-            String orderType = "billpayment";
+            String orderType = "other";
 
             String vnp_TxnRef = "BOOK" + bookingId + "_" + VNPayConfig.getRandomNumber(6);
             String vnp_IpAddr = VNPayConfig.getIpAddress(request);
@@ -63,18 +73,19 @@ public class VNPayPaymentServlet extends HttpServlet {
             vnp_Params.put("vnp_Amount", String.valueOf(amount));
             vnp_Params.put("vnp_CurrCode", "VND");
             vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-            vnp_Params.put("vnp_OrderInfo", "Thanh toan ve xem phim #" + bookingId);
+            vnp_Params.put("vnp_OrderInfo", "Thanh toan ve xem phim " + bookingId);
             vnp_Params.put("vnp_OrderType", orderType);
             vnp_Params.put("vnp_Locale", "vn");
             vnp_Params.put("vnp_ReturnUrl", VNPayConfig.getReturnUrl(request));
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
             // Thời gian tạo + hết hạn (15 phút)
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-            String vnp_CreateDate = now.format(formatter);
-            String vnp_ExpireDate = now.plusMinutes(15).format(formatter);
+            Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+            String vnp_CreateDate = formatter.format(cld.getTime());
             vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+            cld.add(Calendar.MINUTE, 15);
+            String vnp_ExpireDate = formatter.format(cld.getTime());
             vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
             List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
@@ -86,9 +97,9 @@ public class VNPayPaymentServlet extends HttpServlet {
             for (String fieldName : fieldNames) {
                 String fieldValue = vnp_Params.get(fieldName);
                 if (fieldValue != null && !fieldValue.isEmpty()) {
-                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString());
+                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8);
                     hashDataList.add(fieldName + "=" + encodedValue);
-                    queryList.add(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString())
+                    queryList.add(URLEncoder.encode(fieldName, StandardCharsets.UTF_8)
                             + "=" + encodedValue);
                 }
             }
@@ -113,10 +124,10 @@ public class VNPayPaymentServlet extends HttpServlet {
 
             response.sendRedirect(paymentUrl);
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/showtimes");
+            response.sendRedirect(request.getContextPath() + "/movies");
         } catch (DataAccessException e) {
             request.getSession().setAttribute("error", "Lỗi tạo giao dịch thanh toán: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/showtimes");
+            response.sendRedirect(request.getContextPath() + "/movies");
         }
     }
 

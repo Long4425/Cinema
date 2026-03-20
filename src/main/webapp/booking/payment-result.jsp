@@ -18,7 +18,7 @@
 <jsp:include page="/components/header.jsp"/>
 
 <main class="home-main">
-    <div class="container" style="max-width: 720px;">
+    <div class="container" style="max-width: 720px; margin-left: auto; margin-right: auto;">
         <div class="page-header">
             <h1 class="page-title">Kết quả thanh toán</h1>
         </div>

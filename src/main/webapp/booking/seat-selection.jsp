@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -19,16 +20,17 @@
 <jsp:include page="/components/header.jsp"/>
 
 <main class="home-main">
-    <div class="container" style="max-width: 1080px;">
+    <div class="container" style="max-width: 1080px; margin: 0 auto; padding: 0 1rem;">
         <div class="page-header">
             <div>
                 <h1 class="page-title">Chọn ghế</h1>
                 <p class="page-subtitle">
-                    <c:out value="${showtime.movieTitle}"/>
+                    <c:out value="${showtime.movie.title}"/>
                     -
-                    <c:out value="${showtime.roomName}"/>
+                    <c:out value="${showtime.room.roomName}"/>
                     -
-                    <fmt:formatDate value="${showtime.startTime}" pattern="HH:mm dd/MM/yyyy"/>
+                    <fmt:formatNumber value="${showtime.startTime.hour}" minIntegerDigits="2"/>:<fmt:formatNumber value="${showtime.startTime.minute}" minIntegerDigits="2"/>
+                    <c:out value="${showtime.startTime.dayOfMonth}"/>/<c:out value="${showtime.startTime.monthValue}"/>/<c:out value="${showtime.startTime.year}"/>
                 </p>
             </div>
         </div>
@@ -47,25 +49,48 @@
                     Nhấp để chọn/bỏ chọn ghế. Ghế đã có người đặt sẽ bị khóa.
                 </div>
 
-                <div class="seat-map-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 0.4rem; justify-items: center;">
+                <%-- Màn hình (screen indicator) --%>
+                <div style="text-align:center; margin-bottom:1.25rem;">
+                    <div style="display:inline-block; background:#cbd5e1; color:#475569; font-size:0.8rem; font-weight:600; padding:0.35rem 3rem; border-radius:4px 4px 0 0; letter-spacing:0.05em;">
+                        MÀN HÌNH
+                    </div>
+                    <div style="height:4px; background:linear-gradient(90deg,transparent,#94a3b8,transparent); margin-bottom:1.25rem;"></div>
+                </div>
+
+                <%-- Group ghế theo từng hàng (rowLabel) --%>
+                <div class="seat-map-grid" style="display:flex; flex-direction:column; gap:0.5rem; align-items:center;">
+                    <c:set var="currentRow" value=""/>
                     <c:forEach items="${seats}" var="seat">
+                        <c:if test="${seat.rowLabel != currentRow}">
+                            <c:if test="${currentRow != ''}">
+                                </div>
+                            </c:if>
+                            <c:set var="currentRow" value="${seat.rowLabel}"/>
+                            <div style="display:flex; gap:0.4rem; align-items:center;">
+                            <span style="width:22px; text-align:right; font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-right:0.3rem;">${seat.rowLabel}</span>
+                        </c:if>
                         <c:set var="taken" value="${takenSeatIds.contains(seat.seatId)}"/>
                         <button type="button"
-                                class="seat-tile ${taken ? 'seat-tile--taken' : ''}"
+                                class="seat-tile ${taken ? 'seat-tile--taken' : ''} ${seat.seatType == 'VIP' ? 'seat-tile--vip' : ''}"
                                 data-seat-id="${seat.seatId}"
+                                title="${seat.rowLabel}${seat.seatNumber} (${seat.seatType})"
                                 ${taken ? 'disabled' : ''}>
-                            ${seat.rowLabel}${seat.seatNumber}
+                            ${seat.seatNumber}
                         </button>
                     </c:forEach>
+                    <c:if test="${not empty seats}">
+                        </div>
+                    </c:if>
                 </div>
 
                 <input type="hidden" name="seatIds" id="seatIdsInput">
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
                     <div class="seat-legend" style="display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.85rem;">
-                        <span><span class="seat-legend-box" style="display:inline-block;width:14px;height:14px;border-radius:4px;background:var(--primary);margin-right:4px;"></span>Đang chọn</span>
-                        <span><span class="seat-legend-box" style="display:inline-block;width:14px;height:14px;border-radius:4px;background:var(--bg-white);border:1px solid var(--border-light);margin-right:4px;"></span>Trống</span>
-                        <span><span class="seat-legend-box" style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#e5e7eb;border:1px solid #d1d5db;margin-right:4px;"></span>Đã đặt</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:var(--primary);margin-right:4px;"></span>Đang chọn</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:var(--bg-white);border:1px solid var(--border-light);margin-right:4px;"></span>Trống (Standard)</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#fef3c7;border:1px solid #f59e0b;margin-right:4px;"></span>VIP</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#e5e7eb;border:1px solid #d1d5db;margin-right:4px;"></span>Đã đặt</span>
                     </div>
                     <button type="submit" class="btn btn-primary">
                         Tiếp tục
@@ -120,6 +145,12 @@
         border-color: var(--primary);
         color: #fff;
         transform: translateY(1px);
+    }
+
+    .seat-tile--vip {
+        background: #fef3c7;
+        border-color: #f59e0b;
+        color: #92400e;
     }
 
     .seat-tile--taken {

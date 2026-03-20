@@ -30,15 +30,13 @@
                     <a href="${ctx}/movies"
                        class="header__nav-link ${activeTab == 'MOVIES' ? 'header__nav-link--active' : ''}">Phim</a>
                 </li>
-                <c:if test="${not empty sessionScope.user}">
-                    <li class="header__nav-item">
-                        <a href="${ctx}/booking"
-                           class="header__nav-link ${activeTab == 'BOOKING' ? 'header__nav-link--active' : ''}">Đặt vé</a>
-                    </li>
+                <c:if test="${not empty sessionScope.user && roleCode != 'CUSTOMER'}">
                     <li class="header__nav-item">
                         <a href="${ctx}/bookings/history"
                            class="header__nav-link ${activeTab == 'HISTORY' ? 'header__nav-link--active' : ''}">Lịch sử đặt vé</a>
                     </li>
+                </c:if>
+                <c:if test="${not empty sessionScope.user}">
                     <li class="header__nav-item">
                         <a href="${ctx}/membership"
                            class="header__nav-link ${activeTab == 'MEMBERSHIP' ? 'header__nav-link--active' : ''}">Thành viên</a>

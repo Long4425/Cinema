@@ -9,6 +9,7 @@ import dao.VoucherDAO;
 import exception.DataAccessException;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.ServletException;
@@ -38,18 +39,18 @@ public class CheckoutServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
             return;
         }
         Integer bookingId = (Integer) session.getAttribute("currentBookingId");
         if (bookingId == null) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
             return;
         }
 
         Booking booking = bookingDAO.findById(bookingId);
         if (booking == null) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
             return;
         }
 
@@ -69,18 +70,18 @@ public class CheckoutServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
             return;
         }
         Integer bookingId = (Integer) session.getAttribute("currentBookingId");
         if (bookingId == null) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
             return;
         }
 
         Booking booking = bookingDAO.findById(bookingId);
         if (booking == null) {
-            resp.sendRedirect(req.getContextPath() + "/showtimes");
+            resp.sendRedirect(req.getContextPath() + "/movies");
             return;
         }
 
@@ -115,8 +116,10 @@ public class CheckoutServlet extends HttpServlet {
         Voucher appliedVoucher = null;
         BigDecimal discountAmount = BigDecimal.ZERO;
 
-        BigDecimal ticketSubTotal = booking.getSubTotal(); // hiện đang chỉ là tiền vé
-        BigDecimal newSubTotal = ticketSubTotal.add(foodTotal);
+        // Booking/subtotal tiền vé thường là số nguyên VND, nhưng vẫn ép scale về 0 để VNPay nhận đúng định dạng.
+        BigDecimal ticketSubTotal = booking.getSubTotal() != null ? booking.getSubTotal() : BigDecimal.ZERO; // hiện đang chỉ là tiền vé
+        foodTotal = foodTotal.setScale(0, RoundingMode.HALF_UP);
+        BigDecimal newSubTotal = ticketSubTotal.add(foodTotal).setScale(0, RoundingMode.HALF_UP);
 
         if (voucherCode != null && !voucherCode.isBlank()) {
             voucherCode = voucherCode.trim();
@@ -126,10 +129,12 @@ public class CheckoutServlet extends HttpServlet {
             } else {
                 appliedVoucher = v;
                 if ("Percent".equalsIgnoreCase(v.getDiscountType())) {
-                    discountAmount = newSubTotal.multiply(v.getDiscountValue())
-                            .divide(BigDecimal.valueOf(100));
+                    // discountValue lưu theo %
+                    discountAmount = newSubTotal
+                            .multiply(v.getDiscountValue())
+                            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);
                 } else {
-                    discountAmount = v.getDiscountValue();
+                    discountAmount = v.getDiscountValue().setScale(0, RoundingMode.HALF_UP);
                 }
                 if (discountAmount.compareTo(newSubTotal) > 0) {
                     discountAmount = newSubTotal;
@@ -137,7 +142,7 @@ public class CheckoutServlet extends HttpServlet {
             }
         }
 
-        BigDecimal totalAmount = newSubTotal.subtract(discountAmount);
+        BigDecimal totalAmount = newSubTotal.subtract(discountAmount).setScale(0, RoundingMode.HALF_UP);
 
         try {
             // lưu đồ ăn (nếu có)
