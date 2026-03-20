@@ -5,11 +5,11 @@ import dao.ReportDAO;
 import model.Movie;
 import model.RevenueRow;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +27,7 @@ public class RevenueReportServlet extends HttpServlet {
         Integer movieId = parseInt(req.getParameter("movieId"));
 
         List<RevenueRow> rows = reportDAO.getRevenue(from, to, movieId);
-        List<Movie> movies = movieDAO.getAllMovies();
+        List<Movie> movies = movieDAO.findAll();
 
         req.setAttribute("rows", rows);
         req.setAttribute("movies", movies);

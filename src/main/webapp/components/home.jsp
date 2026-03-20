@@ -13,19 +13,21 @@
             <link rel="stylesheet" href="css/header.css">
             <link rel="stylesheet" href="css/footer.css">
             <link rel="stylesheet" href="css/dashboard.css">
+            <link rel="stylesheet" href="css/button.css">
         </head>
 
         <body class="home-layout">
             <jsp:include page="header.jsp" />
 
-            <main class="home-main">
+            <main style="flex:1 0 auto;">
                 <!-- Hero Banner Section -->
-                <section class="hero-banner" style="position: relative;">
-                    <img src="images/cinema_hero_banner.png" alt="Cinema Banner" class="hero-banner__img">
+                <section style="position: relative; margin-top: var(--header-height);">
+                    <img src="images/cinema_hero_banner.png" alt="Cinema Banner" class="hero-banner__img"
+                         style="width:100%; display:block;">
                     <a href="movies"
                        class="btn btn-primary"
-                       style="position:absolute; left:5%; top:12%; padding:0.75rem 1.5rem; font-weight:600;">
-                        Đặt vé xem phim
+                       style="position:absolute; left:5%; top:15%; padding:1.1rem 2.5rem; font-size:1.35rem; font-weight:800; letter-spacing:0.04em; border-radius:14px; box-shadow:0 6px 32px rgba(0,0,0,0.5); text-transform:uppercase; background:#f97316; border-color:#f97316; color:#fff;">
+                        🎬 Đặt vé xem phim
                     </a>
                 </section>
             </main>

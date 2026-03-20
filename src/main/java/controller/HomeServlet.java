@@ -19,17 +19,14 @@ public class HomeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
-            return;
-        }
+        User user = (session != null) ? (User) session.getAttribute("user") : null;
 
-        User user = (User) session.getAttribute("user");
-        String roleCode = (user.getRole() != null) ? user.getRole().getRoleCode() : null;
-
-        if (!"CUSTOMER".equalsIgnoreCase(roleCode)) {
-            resp.sendRedirect(req.getContextPath() + "/dashboard");
-            return;
+        if (user != null) {
+            String roleCode = (user.getRole() != null) ? user.getRole().getRoleCode() : null;
+            if (!"CUSTOMER".equalsIgnoreCase(roleCode)) {
+                resp.sendRedirect(req.getContextPath() + "/dashboard");
+                return;
+            }
         }
 
         req.setAttribute("activeTab", "HOME");

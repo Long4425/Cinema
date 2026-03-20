@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -48,7 +49,7 @@
 
                 <div class="seat-map-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 0.4rem; justify-items: center;">
                     <c:forEach items="${seats}" var="seat">
-                        <c:set var="taken" value="${takenSeatIds contains seat.seatId}"/>
+                        <c:set var="taken" value="${takenSeatIds.contains(seat.seatId)}"/>
                         <button type="button"
                                 class="seat-tile ${taken ? 'seat-tile--taken' : ''}"
                                 data-seat-id="${seat.seatId}"

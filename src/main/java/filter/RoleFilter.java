@@ -52,7 +52,10 @@ public class RoleFilter implements Filter {
             "/images",
             "/webjars",
             "/index.html",
-            "/favicon"
+            "/favicon",
+            "/home",
+            "/movies",
+            "/movie-detail"
     );
 
     @Override
