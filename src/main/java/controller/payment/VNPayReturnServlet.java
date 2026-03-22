@@ -94,7 +94,7 @@ public class VNPayReturnServlet extends HttpServlet {
                     paymentDAO.updateStatus(payment.getPaymentId(), "Failed", null);
                 }
                 if (bookingId > 0) {
-                    bookingDAO.updateStatus(bookingId, "Pending");
+                    bookingDAO.updateStatus(bookingId, "Cancelled");
                     bookingSeatDAO.updateStatusByBooking(bookingId, "Cancelled");
                 }
             }

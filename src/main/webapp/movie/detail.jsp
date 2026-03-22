@@ -80,9 +80,7 @@
                                             <c:forEach var="s" items="${showtimes}">
                                                 <button type="button"
                                                     class="showtime-item"
-                                                    data-url="${pageContext.request.contextPath}/booking/seat-selection?id=${s.showtimeId}"
-                                                    data-logged-in="${not empty sessionScope.user}"
-                                                    onclick="handleShowtimeClick(this)">
+                                                    onclick="location.href='${pageContext.request.contextPath}/booking/seat-selection?id=${s.showtimeId}'">
                                                     <strong><fmt:formatNumber value="${s.startTime.hour}" minIntegerDigits="2"/>:<fmt:formatNumber value="${s.startTime.minute}" minIntegerDigits="2"/></strong>
                                                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-top:0.25rem;">
                                                         ${s.room.roomName} (${s.room.roomType})
@@ -104,19 +102,6 @@
 
 
                 <jsp:include page="/components/footer.jsp" />
-            <script>
-                function handleShowtimeClick(btn) {
-                    var loggedIn = btn.getAttribute('data-logged-in') === 'true';
-                    var url = btn.getAttribute('data-url');
-                    if (loggedIn) {
-                        window.location.href = url;
-                    } else {
-                        var loginUrl = '${pageContext.request.contextPath}/login?msg='
-                            + encodeURIComponent('Xin hãy đăng nhập để tiếp tục đặt vé xem phim.');
-                        window.location.href = loginUrl;
-                    }
-                }
-            </script>
             </body>
 
             </html>

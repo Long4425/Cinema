@@ -19,8 +19,8 @@
 <jsp:include page="/components/header.jsp"/>
 
 <main class="home-main">
-    <div class="movies-container">
-        <h1 style="font-size:2.25rem; font-weight:800; margin-bottom:1.5rem; text-align:center; color:var(--text-dark);">
+    <div class="container container--xl">
+        <h1 class="movies-page-title">
             Lịch chiếu
         </h1>
 

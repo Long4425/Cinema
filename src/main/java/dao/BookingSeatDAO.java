@@ -66,6 +66,18 @@ public class BookingSeatDAO {
         return list;
     }
 
+    public void cancelHeldByBooking(int bookingId) {
+        String sql = "UPDATE BookingSeats SET Status = 'Cancelled', HeldUntil = NULL "
+                + "WHERE BookingId = ? AND Status = 'Held'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi hủy ghế Held theo booking", e);
+        }
+    }
+
     public void updateStatusByBooking(int bookingId, String status) {
         String sql = "UPDATE BookingSeats SET Status = ?, HeldUntil = NULL WHERE BookingId = ?";
         try (Connection conn = dbContext.getConnection();

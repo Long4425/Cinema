@@ -30,6 +30,9 @@
             <p class="auth-card__subtitle">Nhập thông tin để đăng nhập vào tài khoản</p>
         </header>
 
+        <c:if test="${not empty warning}">
+            <div class="auth-msg auth-msg--warning" role="alert">${warning}</div>
+        </c:if>
         <c:if test="${not empty error}">
             <div class="auth-msg auth-msg--error cinema-msg" role="alert">${error}</div>
         </c:if>

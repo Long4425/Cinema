@@ -19,7 +19,7 @@
 <jsp:include page="/components/header.jsp"/>
 
 <main class="home-main">
-    <div class="container" style="max-width: 780px;">
+    <div class="container container--md">
         <div class="page-header">
             <div>
                 <h1 class="page-title">Chi tiết vé xem phim</h1>

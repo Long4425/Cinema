@@ -81,3 +81,70 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+/* ============================================================
+   CONTAINER — centered, responsive, consistent padding
+   ============================================================ */
+.container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+/* Narrow: forms, single-item details (payment result, login…) */
+.container--sm  { max-width: 640px; }
+/* Medium: summary, profile, checkout                          */
+.container--md  { max-width: 820px; }
+/* Wide: seat map, movie list, management tables              */
+.container--lg  { max-width: 1100px; }
+/* Full-width variant (dashboard panels)                      */
+.container--xl  { max-width: 1280px; }
+
+/* Section vertical rhythm */
+.section {
+    padding: 2rem 0;
+}
+
+/* ============================================================
+   PAGE HEADER — title + subtitle block at top of each page
+   ============================================================ */
+.page-header {
+    padding: 1.75rem 0 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 1.75rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.25;
+}
+
+.page-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* ============================================================
+   CARD — white box with shadow
+   ============================================================ */
+.card {
+    background: var(--bg-white);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    padding: 1.5rem;
+}
+
+.card + .card {
+    margin-top: 1.25rem;
+}

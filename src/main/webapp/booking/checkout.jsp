@@ -21,7 +21,7 @@
 <jsp:include page="/components/header.jsp"/>
 
 <main class="home-main">
-    <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 1rem;">
+    <div class="container container--lg">
         <div class="page-header">
             <div>
                 <h1 class="page-title">Xác nhận đơn hàng</h1>

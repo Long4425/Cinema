@@ -20,7 +20,7 @@
 <jsp:include page="/components/header.jsp"/>
 
 <main class="home-main">
-    <div class="container" style="max-width: 960px;">
+    <div class="container container--lg">
         <div class="page-header">
             <div>
                 <h1 class="page-title">Lịch sử đặt vé</h1>

@@ -55,7 +55,9 @@ public class RoleFilter implements Filter {
             "/favicon",
             "/home",
             "/movies",
-            "/movie-detail"
+            "/movie-detail",
+            "/showtimes",
+            "/booking/seat-selection"
     );
 
     @Override

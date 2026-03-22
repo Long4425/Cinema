@@ -31,7 +31,7 @@ public class LoginServlet extends HttpServlet {
         }
         String msg = req.getParameter("msg");
         if (msg != null && !msg.isBlank()) {
-            req.setAttribute("error", msg);
+            req.setAttribute("warning", msg);
         }
         HttpSession session = req.getSession(false);
         if (session != null && session.getAttribute("user") != null) {

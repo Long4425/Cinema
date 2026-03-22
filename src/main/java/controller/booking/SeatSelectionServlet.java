@@ -34,6 +34,20 @@ public class SeatSelectionServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Hủy booking Pending cũ (nếu user back về mà chưa thanh toán)
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            Integer pendingBookingId = (Integer) session.getAttribute("currentBookingId");
+            if (pendingBookingId != null) {
+                try {
+                    bookingSeatDAO.cancelHeldByBooking(pendingBookingId);
+                    bookingDAO.updateStatus(pendingBookingId, "Cancelled");
+                } catch (Exception ignored) {
+                }
+                session.removeAttribute("currentBookingId");
+            }
+        }
+
         String showtimeIdStr = req.getParameter("showtimeId");
         if (showtimeIdStr == null || showtimeIdStr.isBlank()) {
             showtimeIdStr = req.getParameter("id");
@@ -66,6 +80,13 @@ public class SeatSelectionServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            resp.sendRedirect(req.getContextPath() + "/login?msg="
+                    + java.net.URLEncoder.encode("Xin hãy đăng nhập để tiếp tục đặt vé xem phim.", "UTF-8"));
+            return;
+        }
+
         String showtimeIdStr = req.getParameter("showtimeId");
         if (showtimeIdStr == null || showtimeIdStr.isBlank()) {
             showtimeIdStr = req.getParameter("id");
@@ -116,14 +137,8 @@ public class SeatSelectionServlet extends HttpServlet {
             }
 
             // Tạo booking ở trạng thái Pending, loại ONLINE
-            HttpSession session = req.getSession(false);
-            Integer userId = null;
-            if (session != null) {
-                User user = (User) session.getAttribute("user");
-                if (user != null) {
-                    userId = user.getUserId();
-                }
-            }
+            User user = (User) session.getAttribute("user");
+            int userId = user.getUserId();
 
             Booking booking = new Booking();
             booking.setUserId(userId);
@@ -154,9 +169,6 @@ public class SeatSelectionServlet extends HttpServlet {
             bookingSeatDAO.createBatch(bookingSeats);
 
             // Lưu bookingId vào session để dùng cho bước checkout / thanh toán
-            if (session == null) {
-                session = req.getSession(true);
-            }
             session.setAttribute("currentBookingId", bookingId);
 
             resp.sendRedirect(req.getContextPath() + "/booking/checkout");

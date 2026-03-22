@@ -20,7 +20,7 @@
 <jsp:include page="/components/header.jsp"/>
 
 <main class="home-main">
-    <div class="container" style="max-width: 1080px; margin: 0 auto; padding: 0 1rem;">
+    <div class="container container--lg">
         <div class="page-header">
             <div>
                 <h1 class="page-title">Chọn ghế</h1>
@@ -92,9 +92,18 @@
                         <span><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#fef3c7;border:1px solid #f59e0b;margin-right:4px;"></span>VIP</span>
                         <span><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#e5e7eb;border:1px solid #d1d5db;margin-right:4px;"></span>Đã đặt</span>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        Tiếp tục
-                    </button>
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.user}">
+                            <button type="submit" class="btn btn-primary">
+                                Tiếp tục
+                            </button>
+                        </c:when>
+                        <c:otherwise>
+                            <a id="loginBtn" href="#" class="btn btn-primary">
+                                Đăng nhập để đặt vé
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </form>
         </div>
@@ -105,6 +114,12 @@
 
 <script>
     (function () {
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.href = '${pageContext.request.contextPath}/login?msg='
+                + encodeURIComponent('Xin hãy đăng nhập để tiếp tục đặt vé xem phim.');
+        }
+
         const seatButtons = document.querySelectorAll('.seat-tile:not(.seat-tile--taken)');
         const seatIdsInput = document.getElementById('seatIdsInput');
 
@@ -151,6 +166,12 @@
         background: #fef3c7;
         border-color: #f59e0b;
         color: #92400e;
+    }
+
+    .seat-tile--vip.seat-tile--selected {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
     }
 
     .seat-tile--taken {
