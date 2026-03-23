@@ -16,12 +16,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @WebServlet(name = "TicketCheckinServlet", urlPatterns = {"/manager/ticket-checkin"})
 public class TicketCheckinServlet extends HttpServlet {
+
+    private static final String VIEW = "/booking/ticket-checkin.jsp";
+    private static final String ATTR_ERROR = "error";
+    private static final String ATTR_KEYWORD = "keyword";
 
     private final BookingDAO bookingDAO = new BookingDAO();
     private final BookingSeatDAO bookingSeatDAO = new BookingSeatDAO();
@@ -30,32 +33,37 @@ public class TicketCheckinServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.getRequestDispatcher("/booking/ticket-checkin.jsp").forward(req, resp);
+        String bookingIdParam = req.getParameter("bookingId");
+        if (bookingIdParam != null && !bookingIdParam.isBlank()) {
+            lookup(req, resp, bookingIdParam.trim());
+        } else {
+            req.getRequestDispatcher(VIEW).forward(req, resp);
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String keyword = req.getParameter("keyword");
+        String keyword = req.getParameter(ATTR_KEYWORD);
         if (keyword == null || keyword.isBlank()) {
-            req.setAttribute("error", "Vui lòng nhập mã đơn hoặc email khách hàng.");
-            req.getRequestDispatcher("/booking/ticket-checkin.jsp").forward(req, resp);
+            req.setAttribute(ATTR_ERROR, "Vui lòng nhập mã đơn hoặc email khách hàng.");
+            req.getRequestDispatcher(VIEW).forward(req, resp);
             return;
         }
-        keyword = keyword.trim();
+        lookup(req, resp, keyword.trim());
+    }
 
+    private void lookup(HttpServletRequest req, HttpServletResponse resp, String keyword)
+            throws ServletException, IOException {
         Booking booking = null;
         User user = null;
 
-        // Ưu tiên: nếu là số -> tra cứu theo BookingId
         try {
             int bookingId = Integer.parseInt(keyword);
             booking = bookingDAO.findById(bookingId);
         } catch (NumberFormatException ignored) {
-            // không phải số -> thử tìm theo email
             Optional<User> userOpt = userDAO.findByEmail(keyword);
             if (userOpt.isPresent()) {
                 user = userOpt.get();
-                // đơn giản: lấy booking mới nhất của user
                 List<Booking> userBookings = bookingDAO.findByUser(user.getUserId());
                 if (!userBookings.isEmpty()) {
                     booking = userBookings.get(0);
@@ -64,17 +72,17 @@ public class TicketCheckinServlet extends HttpServlet {
         }
 
         if (booking == null) {
-            req.setAttribute("error", "Không tìm thấy đơn đặt vé phù hợp.");
-            req.getRequestDispatcher("/booking/ticket-checkin.jsp").forward(req, resp);
+            req.setAttribute(ATTR_ERROR, "Không tìm thấy đơn đặt vé phù hợp.");
+            req.getRequestDispatcher(VIEW).forward(req, resp);
             return;
         }
 
         Showtime showtime = showtimeDAO.findById(booking.getShowtimeId());
         List<BookingSeat> seats = bookingSeatDAO.findByBookingWithSeat(booking.getBookingId());
 
-        boolean isValid = false;
-        String reason = "";
         LocalDateTime now = LocalDateTime.now();
+        boolean isValid;
+        String reason;
 
         if (!"Confirmed".equalsIgnoreCase(booking.getStatus())) {
             isValid = false;
@@ -93,15 +101,13 @@ public class TicketCheckinServlet extends HttpServlet {
             reason = "Vé hợp lệ để check-in.";
         }
 
-        req.setAttribute("keyword", keyword);
+        req.setAttribute(ATTR_KEYWORD, keyword);
         req.setAttribute("booking", booking);
         req.setAttribute("showtime", showtime);
         req.setAttribute("bookingSeats", seats);
         req.setAttribute("customer", user);
         req.setAttribute("isValid", isValid);
         req.setAttribute("reason", reason);
-
-        req.getRequestDispatcher("/booking/ticket-checkin.jsp").forward(req, resp);
+        req.getRequestDispatcher(VIEW).forward(req, resp);
     }
 }
-

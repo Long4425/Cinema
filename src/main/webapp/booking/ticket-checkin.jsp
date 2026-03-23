@@ -87,10 +87,11 @@
                     <div>
                         <h3 style="font-size:0.95rem;margin-bottom:0.35rem;">Thông tin suất chiếu</h3>
                         <p style="font-size:0.9rem;margin:0;">
-                            <strong>Phim:</strong> <c:out value="${showtime.movieTitle}"/><br>
-                            <strong>Phòng:</strong> <c:out value="${showtime.roomName}"/><br>
+                            <strong>Phim:</strong> <c:out value="${showtime.movie.title}"/><br>
+                            <strong>Phòng:</strong> <c:out value="${showtime.room.roomName}"/><br>
                             <strong>Giờ chiếu:</strong>
-                            <fmt:formatDate value="${showtime.startTime}" pattern="HH:mm dd/MM/yyyy"/>
+                            <fmt:formatNumber value="${showtime.startTime.hour}"  minIntegerDigits="2"/>:<fmt:formatNumber value="${showtime.startTime.minute}" minIntegerDigits="2"/>
+                            ${showtime.startTime.dayOfMonth}/${showtime.startTime.monthValue}/${showtime.startTime.year}
                         </p>
                     </div>
 

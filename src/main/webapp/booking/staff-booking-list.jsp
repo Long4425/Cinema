@@ -143,6 +143,7 @@
                                     <td>
                                         <div class="table-actions">
                                             <a href="booking/summary?bookingId=${row.bookingId}" class="btn btn-sm btn-secondary">Xem vé</a>
+                                            <a href="manager/ticket-checkin?bookingId=${row.bookingId}" class="btn btn-sm btn-secondary">Soát vé</a>
 
                                             <%-- Nút Hủy vé: chỉ khi Confirmed/Pending VÀ chưa tới giờ chiếu --%>
                                             <c:if test="${(row.status == 'Confirmed' || row.status == 'Pending') && row.beforeShowtime}">
