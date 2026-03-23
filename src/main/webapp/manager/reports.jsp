@@ -16,7 +16,8 @@
     <link rel="stylesheet" href="css/table.css">
     <link rel="stylesheet" href="css/button.css">
     <link rel="stylesheet" href="css/badge.css">
-    <link rel="stylesheet" href="css/movies.css">
+    <link rel="stylesheet" href="css/form.css">
+    <link rel="stylesheet" href="css/filter.css">
 </head>
 <body class="dashboard-layout">
 <jsp:include page="/components/header.jsp"/>
@@ -33,20 +34,32 @@
                 </div>
             </div>
 
+            <%-- Quick date range --%>
+            <div class="card" style="padding:0.75rem 1.25rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                <span class="form-label" style="margin:0;white-space:nowrap;">Chọn nhanh:</span>
+                <button type="button" class="btn btn-secondary" onclick="setRange('today')">Hôm nay</button>
+                <button type="button" class="btn btn-secondary" onclick="setRange('7days')">7 ngày</button>
+                <button type="button" class="btn btn-secondary" onclick="setRange('30days')">30 ngày</button>
+                <button type="button" class="btn btn-secondary" onclick="setRange('thisMonth')">Tháng này</button>
+                <button type="button" class="btn btn-secondary" onclick="setRange('lastMonth')">Tháng trước</button>
+                <button type="button" class="btn btn-secondary" onclick="setRange('thisQuarter')">Quý này</button>
+            </div>
+
+            <%-- Filter bar --%>
             <div class="card" style="padding:1.25rem;margin-bottom:1rem;">
-                <form method="get" action="manager/reports" class="search-filter-section" style="margin:0;">
-                    <div class="filter-group">
+                <form id="reportForm" method="get" action="manager/reports" class="search-filter-bar">
+                    <div class="filter-field filter-field--fixed">
                         <label class="form-label" for="fromDate">Từ ngày</label>
                         <input type="date" id="fromDate" name="fromDate" class="form-input" value="${fromDate}">
                     </div>
-                    <div class="filter-group">
+                    <div class="filter-field filter-field--fixed">
                         <label class="form-label" for="toDate">Đến ngày</label>
                         <input type="date" id="toDate" name="toDate" class="form-input" value="${toDate}">
                     </div>
-                    <div class="filter-group">
+                    <div class="filter-field filter-field--fixed">
                         <label class="form-label" for="movieId">Phim</label>
                         <select id="movieId" name="movieId" class="form-input">
-                            <option value="">Tất cả</option>
+                            <option value="">Tất cả phim</option>
                             <c:forEach items="${movies}" var="m">
                                 <option value="${m.movieId}" ${movieId != null && movieId == m.movieId ? 'selected' : ''}>
                                     <c:out value="${m.title}"/>
@@ -54,15 +67,64 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <div style="display:flex;align-items:flex-end;gap:0.5rem;">
-                        <button type="submit" class="btn btn-primary">Xem báo cáo</button>
-                        <a class="btn btn-secondary"
-                           href="manager/export?fromDate=${fromDate}&toDate=${toDate}<c:if test='${movieId != null}'>&movieId=${movieId}</c:if>">
-                            Xuất CSV
-                        </a>
+                    <div class="filter-field filter-field--fixed">
+                        <label class="form-label" for="roomId">Phòng chiếu</label>
+                        <select id="roomId" name="roomId" class="form-input">
+                            <option value="">Tất cả phòng</option>
+                            <c:forEach items="${rooms}" var="rm">
+                                <option value="${rm.roomId}" ${roomId != null && roomId == rm.roomId ? 'selected' : ''}>
+                                    <c:out value="${rm.roomName}"/>
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Lọc</button>
+                        <button type="button" class="btn btn-secondary" onclick="exportExcel()">Xuất Excel</button>
+                        <a href="manager/reports" class="btn btn-secondary">Reset</a>
                     </div>
                 </form>
             </div>
+
+            <script>
+            function setRange(range) {
+                const today = new Date();
+                let from, to;
+                const fmt = d => d.toISOString().slice(0, 10);
+                if (range === 'today') {
+                    from = to = fmt(today);
+                } else if (range === '7days') {
+                    const f = new Date(today); f.setDate(f.getDate() - 6);
+                    from = fmt(f); to = fmt(today);
+                } else if (range === '30days') {
+                    const f = new Date(today); f.setDate(f.getDate() - 29);
+                    from = fmt(f); to = fmt(today);
+                } else if (range === 'thisMonth') {
+                    from = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+                    to = fmt(new Date(today.getFullYear(), today.getMonth() + 1, 0));
+                } else if (range === 'lastMonth') {
+                    from = fmt(new Date(today.getFullYear(), today.getMonth() - 1, 1));
+                    to = fmt(new Date(today.getFullYear(), today.getMonth(), 0));
+                } else if (range === 'thisQuarter') {
+                    const q = Math.floor(today.getMonth() / 3);
+                    from = fmt(new Date(today.getFullYear(), q * 3, 1));
+                    to = fmt(new Date(today.getFullYear(), q * 3 + 3, 0));
+                }
+                document.getElementById('fromDate').value = from;
+                document.getElementById('toDate').value = to;
+                document.getElementById('reportForm').submit();
+            }
+            function exportExcel() {
+                const from = document.getElementById('fromDate').value;
+                const to   = document.getElementById('toDate').value;
+                const mid  = document.getElementById('movieId').value;
+                const rid  = document.getElementById('roomId').value;
+                let url = 'manager/export?fromDate=' + from + '&toDate=' + to;
+                if (mid) url += '&movieId=' + mid;
+                if (rid) url += '&roomId=' + rid;
+                window.location.href = url;
+            }
+            </script>
 
             <div class="card" style="padding:1.25rem;">
                 <c:if test="${empty rows}">
