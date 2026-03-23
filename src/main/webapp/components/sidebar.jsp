@@ -35,28 +35,15 @@
                                 <span class="sidebar__group-title">Quầy bán vé</span>
                                 <ul class="sidebar__menu">
                                     <li>
-                                        <a href="${ctx}/counter/booking"
-                                            class="sidebar__link ${uri.contains('/counter/booking') ? 'sidebar__link--active' : ''}">
+                                        <a href="${ctx}/movies"
+                                            class="sidebar__link ${uri.contains('/movies') || uri.contains('/counter/seat-selection') || uri.contains('/counter/checkout') ? 'sidebar__link--active' : ''}">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 class="sidebar__icon">
                                                 <path d="M15 5l-10 10l-2 2l2 2l2 -2l10 -10l-2 -2z" />
                                                 <path d="M19 7l2 2l-2 2l-2 -2z" />
                                                 <path d="M9 11l-4 4" />
                                             </svg>
-                                            Đặt vé
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="${ctx}/manager/booking/cash-payment"
-                                            class="sidebar__link ${uri.contains('/manager/booking/cash-payment') ? 'sidebar__link--active' : ''}">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                class="sidebar__icon">
-                                                <rect x="3" y="5" width="18" height="14" rx="3" />
-                                                <line x1="3" y1="10" x2="21" y2="10" />
-                                                <line x1="7" y1="15" x2="7.01" y2="15" />
-                                                <line x1="11" y1="15" x2="13" y2="15" />
-                                            </svg>
-                                            Thanh toán tiền mặt
+                                            Đặt vé tại quầy
                                         </a>
                                     </li>
                                     <li>

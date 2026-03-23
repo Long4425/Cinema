@@ -48,7 +48,15 @@
             <c:when test="${not empty showtimes}">
                 <div class="movie-grid">
                     <c:forEach var="s" items="${showtimes}">
-                        <div class="movie-card" onclick="location.href='booking/seat-selection?id=${s.showtimeId}'">
+                        <c:choose>
+                            <c:when test="${sessionScope.user != null && (sessionScope.user.role.roleCode == 'CASHIER' || sessionScope.user.role.roleCode == 'MANAGER')}">
+                                <c:set var="seatSelUrl" value="counter/seat-selection?showtimeId=${s.showtimeId}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <c:set var="seatSelUrl" value="booking/seat-selection?id=${s.showtimeId}"/>
+                            </c:otherwise>
+                        </c:choose>
+                        <div class="movie-card" onclick="location.href='${seatSelUrl}'">
                             <div class="poster-container" style="height: 250px;">
                                 <c:choose>
                                     <c:when test="${not empty s.movie.posterUrl}">

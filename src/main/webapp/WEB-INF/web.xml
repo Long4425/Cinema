@@ -87,6 +87,24 @@
         <url-pattern>/profile/*</url-pattern>
     </filter-mapping>
     <servlet>
+        <servlet-name>CounterSeatSelectionServlet</servlet-name>
+        <servlet-class>controller.counter.CounterSeatSelectionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CounterSeatSelectionServlet</servlet-name>
+        <url-pattern>/counter/seat-selection</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>CounterCheckoutServlet</servlet-name>
+        <servlet-class>controller.counter.CounterCheckoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CounterCheckoutServlet</servlet-name>
+        <url-pattern>/counter/checkout</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>HomeServlet</servlet-name>
         <servlet-class>controller.HomeServlet</servlet-class>
     </servlet>

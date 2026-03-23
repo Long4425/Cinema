@@ -82,8 +82,16 @@
                                                 </div>
                                                 <div class="showtime-grid">
                                                     <c:forEach var="s" items="${entry.value}">
+                                                        <c:choose>
+                                                            <c:when test="${sessionScope.user != null && (sessionScope.user.role.roleCode == 'CASHIER' || sessionScope.user.role.roleCode == 'MANAGER')}">
+                                                                <c:set var="detailSeatUrl" value="counter/seat-selection?showtimeId=${s.showtimeId}"/>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <c:set var="detailSeatUrl" value="booking/seat-selection?id=${s.showtimeId}"/>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                         <button type="button" class="showtime-item"
-                                                            onclick="location.href='${pageContext.request.contextPath}/booking/seat-selection?id=${s.showtimeId}'">
+                                                            onclick="location.href='${detailSeatUrl}'">
                                                             <strong>
                                                                 <fmt:formatNumber value="${s.startTime.hour}" minIntegerDigits="2"/>:<fmt:formatNumber value="${s.startTime.minute}" minIntegerDigits="2"/>
                                                             </strong>
