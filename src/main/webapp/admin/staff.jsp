@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="css/table.css">
     <link rel="stylesheet" href="css/button.css">
     <link rel="stylesheet" href="css/badge.css">
+    <link rel="stylesheet" href="css/form.css">
+    <link rel="stylesheet" href="css/message.css">
 </head>
 <body class="dashboard-layout">
 <jsp:include page="/components/header.jsp"/>
@@ -24,6 +26,7 @@
 
     <main class="dashboard-main">
         <div class="dashboard-main__inner">
+
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Quản lý nhân viên</h1>
@@ -31,10 +34,19 @@
                 </div>
             </div>
 
-            <div class="grid" style="display:grid;grid-template-columns:1.1fr 2fr;gap:1.5rem;align-items:flex-start;">
-                <div class="card" style="padding:1.25rem;">
-                    <h2 style="font-size:1rem;margin-bottom:0.75rem;">Tạo tài khoản nhân viên</h2>
-                    <form method="post" action="admin/staff" class="form" style="display:flex;flex-direction:column;gap:0.75rem;">
+            <c:if test="${not empty successMsg}">
+                <div class="cinema-msg cinema-msg--success">${successMsg}</div>
+            </c:if>
+            <c:if test="${not empty errorMsg}">
+                <div class="cinema-msg cinema-msg--error">${errorMsg}</div>
+            </c:if>
+
+            <div class="staff-layout">
+
+                <%-- Create form --%>
+                <div class="card">
+                    <h2 class="card-section-title">Tạo tài khoản nhân viên</h2>
+                    <form method="post" action="admin/staff">
                         <input type="hidden" name="action" value="create">
                         <div class="form-group">
                             <label class="form-label" for="fullName">Họ tên</label>
@@ -64,65 +76,68 @@
                     </form>
                 </div>
 
-                <div class="card" style="padding:1.25rem;">
-                    <h2 style="font-size:1rem;margin-bottom:0.75rem;">Danh sách nhân viên</h2>
-                    <c:if test="${empty staff}">
-                        <p style="font-size:0.9rem;color:var(--text-muted);margin:0;">Chưa có tài khoản nhân viên nào.</p>
-                    </c:if>
-                    <c:if test="${not empty staff}">
-                        <div class="table-wrap">
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Họ tên</th>
-                                    <th>Email</th>
-                                    <th>Vai trò</th>
-                                    <th>Trạng thái</th>
-                                    <th style="width:120px;">Thao tác</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <c:forEach items="${staff}" var="u">
+                <%-- Staff list --%>
+                <div class="card">
+                    <h2 class="card-section-title">Danh sách nhân viên</h2>
+                    <c:choose>
+                        <c:when test="${empty staff}">
+                            <p class="table-empty">Chưa có tài khoản nhân viên nào.</p>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="table-wrap">
+                                <table class="table">
+                                    <thead>
                                     <tr>
-                                        <td>${u.userId}</td>
-                                        <td><c:out value="${u.fullName}"/></td>
-                                        <td><c:out value="${u.email}"/></td>
-                                        <td>
-                                            <span class="badge badge-info">
-                                                ${u.role.roleCode}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${u.active}">
-                                                    <span class="badge badge-success">Đang hoạt động</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge badge-danger">Đã vô hiệu</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <form method="post" action="admin/staff" style="display:inline;">
-                                                <input type="hidden" name="action" value="toggle">
-                                                <input type="hidden" name="userId" value="${u.userId}">
-                                                <button type="submit" class="btn btn-sm btn-secondary">
-                                                    <c:choose>
-                                                        <c:when test="${u.active}">Vô hiệu</c:when>
-                                                        <c:otherwise>Kích hoạt</c:otherwise>
-                                                    </c:choose>
-                                                </button>
-                                            </form>
-                                        </td>
+                                        <th>ID</th>
+                                        <th>Họ tên</th>
+                                        <th>Email</th>
+                                        <th>Vai trò</th>
+                                        <th>Trạng thái</th>
+                                        <th class="col-actions">Thao tác</th>
                                     </tr>
-                                </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </c:if>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach items="${staff}" var="u">
+                                        <tr>
+                                            <td>${u.userId}</td>
+                                            <td><strong><c:out value="${u.fullName}"/></strong></td>
+                                            <td><c:out value="${u.email}"/></td>
+                                            <td>
+                                                <span class="badge badge-info">${u.role.roleCode}</span>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${u.active}">
+                                                        <span class="badge badge-success">Đang hoạt động</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge badge-danger">Đã vô hiệu</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <form method="post" action="admin/staff">
+                                                    <input type="hidden" name="action" value="toggle">
+                                                    <input type="hidden" name="userId" value="${u.userId}">
+                                                    <button type="submit" class="btn btn-sm btn-secondary">
+                                                        <c:choose>
+                                                            <c:when test="${u.active}">Vô hiệu</c:when>
+                                                            <c:otherwise>Kích hoạt</c:otherwise>
+                                                        </c:choose>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
-            </div>
+
+            </div><%-- /.staff-layout --%>
+
         </div>
     </main>
 </div>
@@ -130,4 +145,3 @@
 <jsp:include page="/components/footer.jsp"/>
 </body>
 </html>
-
