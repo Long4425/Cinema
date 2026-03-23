@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,6 +17,80 @@
     <link rel="stylesheet" href="css/button.css">
     <link rel="stylesheet" href="css/badge.css">
     <link rel="stylesheet" href="css/message.css">
+    <style>
+        .loyalty-panel {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .loyalty-card {
+            flex: 1;
+            min-width: 220px;
+            border-radius: 12px;
+            padding: 1.1rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .loyalty-card--points {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fcd34d;
+        }
+        .loyalty-card--vouchers {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #86efac;
+        }
+        .loyalty-card__icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .loyalty-card__label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 0.15rem;
+        }
+        .loyalty-card__value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+        }
+        .loyalty-card__hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+        .voucher-list {
+            margin-top: 0.75rem;
+        }
+        .voucher-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border: 1.5px dashed #22c55e;
+            border-radius: 8px;
+            padding: 0.5rem 0.9rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .voucher-item__code {
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #15803d;
+            letter-spacing: 0.04em;
+        }
+        .voucher-item__value {
+            font-weight: 600;
+            color: #166534;
+        }
+        .voucher-item__exp {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
 </head>
 <body class="home-layout">
 <jsp:include page="/components/header.jsp"/>
@@ -26,6 +101,45 @@
             <div>
                 <h1 class="page-title">Lịch sử đặt vé</h1>
                 <p class="page-subtitle">Xem lại các đơn đặt vé, tình trạng và truy xuất vé.</p>
+            </div>
+            <a href="profile/redeem-points" class="btn btn-primary">
+                &#127775; Đổi điểm (${sessionScope.user.loyaltyPoint} điểm)
+            </a>
+        </div>
+
+        <%-- UC-24/25: Panel điểm tích lũy & voucher --%>
+        <div class="loyalty-panel">
+            <div class="loyalty-card loyalty-card--points">
+                <div class="loyalty-card__icon">&#127775;</div>
+                <div>
+                    <div class="loyalty-card__label">Điểm tích lũy</div>
+                    <div class="loyalty-card__value">${sessionScope.user.loyaltyPoint}</div>
+                    <div class="loyalty-card__hint">10 điểm = voucher giảm 20.000₫</div>
+                </div>
+            </div>
+            <div class="loyalty-card loyalty-card--vouchers">
+                <div class="loyalty-card__icon">&#127873;</div>
+                <div style="flex:1;">
+                    <div class="loyalty-card__label">Voucher từ điểm</div>
+                    <c:choose>
+                        <c:when test="${empty myVouchers}">
+                            <div class="loyalty-card__value">0</div>
+                            <div class="loyalty-card__hint">Chưa có voucher nào</div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="loyalty-card__value">${fn:length(myVouchers)}</div>
+                            <div class="voucher-list">
+                                <c:forEach items="${myVouchers}" var="v">
+                                    <div class="voucher-item">
+                                        <span class="voucher-item__code">${v.code}</span>
+                                        <span class="voucher-item__value">-20.000₫</span>
+                                        <span class="voucher-item__exp">HSD: ${v.expiredAt.dayOfMonth}/${v.expiredAt.monthValue}/${v.expiredAt.year}</span>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
             </div>
         </div>
 
@@ -55,6 +169,7 @@
                                 <th>Ghế</th>
                                 <th>Trạng thái</th>
                                 <th>Tổng tiền</th>
+                                <th>Điểm +</th>
                                 <th style="width:120px;">Thao tác</th>
                             </tr>
                             </thead>
@@ -95,6 +210,16 @@
                                     </td>
                                     <td>
                                         <fmt:formatNumber value="${b.totalAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${b.status == 'Confirmed' and b.pointsEarned > 0}">
+                                                <span style="color:#d97706; font-weight:600;">+${b.pointsEarned}</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span style="color:var(--text-muted);">—</span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
                                     <td>
                                         <div class="table-actions">

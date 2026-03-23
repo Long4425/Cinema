@@ -3,10 +3,12 @@ package controller.booking;
 import dao.BookingDAO;
 import dao.BookingSeatDAO;
 import dao.ShowtimeDAO;
+import dao.VoucherDAO;
 import model.Booking;
 import model.BookingSeat;
 import model.Showtime;
 import model.User;
+import model.Voucher;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,6 +28,7 @@ public class CustomerBookingHistoryServlet extends HttpServlet {
     private final BookingDAO bookingDAO = new BookingDAO();
     private final ShowtimeDAO showtimeDAO = new ShowtimeDAO();
     private final BookingSeatDAO bookingSeatDAO = new BookingSeatDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -58,11 +61,15 @@ public class CustomerBookingHistoryServlet extends HttpServlet {
             exchangeableMap.put(b.getBookingId(), exchangeable);
         }
 
+        // UC-24/25: Điểm tích lũy và voucher cá nhân còn hiệu lực
+        List<Voucher> myVouchers = voucherDAO.findActiveByUser(user.getUserId());
+
         req.setAttribute("bookings", bookings);
         req.setAttribute("showtimeMap", showtimeMap);
         req.setAttribute("seatsMap", seatsMap);
         req.setAttribute("cancellableMap", cancellableMap);
         req.setAttribute("exchangeableMap", exchangeableMap);
+        req.setAttribute("myVouchers", myVouchers);
         req.setAttribute("activeTab", "HISTORY");
 
         req.getRequestDispatcher("/profile/booking-history.jsp").forward(req, resp);

@@ -201,6 +201,52 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Cộng thêm điểm tích lũy cho user. Trả về tổng điểm mới sau khi cộng.
+     */
+    public int addLoyaltyPoints(int userId, int points) {
+        String sql = "UPDATE Users SET LoyaltyPoint = LoyaltyPoint + ? WHERE UserId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, points);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi cộng điểm tích lũy", e);
+        }
+        // Trả về điểm hiện tại sau khi cộng
+        String selectSql = "SELECT LoyaltyPoint FROM Users WHERE UserId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(selectSql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("LoyaltyPoint");
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi đọc điểm tích lũy", e);
+        }
+        return 0;
+    }
+
+    /**
+     * Trừ điểm tích lũy khi đổi voucher. Không cho trừ âm.
+     */
+    public void deductLoyaltyPoints(int userId, int points) {
+        String sql = "UPDATE Users SET LoyaltyPoint = LoyaltyPoint - ? WHERE UserId = ? AND LoyaltyPoint >= ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, points);
+            ps.setInt(2, userId);
+            ps.setInt(3, points);
+            int affected = ps.executeUpdate();
+            if (affected == 0) {
+                throw new DataAccessException("Không đủ điểm để đổi voucher");
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi trừ điểm tích lũy", e);
+        }
+    }
+
     public Role getRoleByCode(String roleCode) {
         String sql = "SELECT RoleId, RoleCode, RoleName, Description FROM Roles WHERE RoleCode = ?";
         try (Connection conn = dbContext.getConnection();

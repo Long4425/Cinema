@@ -163,14 +163,38 @@
 
                     <%-- Voucher --%>
                     <div style="background:var(--bg-white); border:1px solid var(--border-light); border-radius:14px; padding:0.95rem 1rem;">
-                        <label style="display:flex; align-items:center; gap:0.55rem; font-size:0.85rem; font-weight:700; color:var(--text-dark); margin-bottom:0.6rem;">
+                        <div style="display:flex; align-items:center; gap:0.55rem; font-size:0.85rem; font-weight:700; color:var(--text-dark); margin-bottom:0.75rem;">
                             <span>🏷️ Mã giảm giá</span>
-                        </label>
+                        </div>
+
+                        <%-- Voucher cá nhân từ điểm --%>
+                        <c:if test="${not empty myVouchers}">
+                            <div style="margin-bottom:0.75rem;">
+                                <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">VOUCHER CỦA BẠN</div>
+                                <div style="display:flex;flex-direction:column;gap:0.4rem;">
+                                    <c:forEach items="${myVouchers}" var="v">
+                                        <button type="button" class="voucher-pick-item" data-code="${v.code}"
+                                                style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;border:1.5px dashed #22c55e;border-radius:8px;padding:0.5rem 0.75rem;cursor:pointer;background:#fff;transition:background .15s;text-align:left;">
+                                            <span style="font-family:monospace;font-weight:700;font-size:0.9rem;color:#15803d;">${v.code}</span>
+                                            <span style="font-weight:600;color:#166534;white-space:nowrap;">
+                                                -<fmt:formatNumber value="${v.discountValue}" type="number" maxFractionDigits="0"/>₫
+                                            </span>
+                                        </button>
+                                    </c:forEach>
+                                </div>
+                            </div>
+                        </c:if>
+
+                        <%-- Nhập mã thủ công --%>
+                        <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">
+                            <c:choose>
+                                <c:when test="${not empty myVouchers}">HOẶC NHẬP MÃ KHÁC</c:when>
+                                <c:otherwise>NHẬP MÃ VOUCHER</c:otherwise>
+                            </c:choose>
+                        </div>
                         <input type="text" id="voucherCode" name="voucherCode" class="form-input"
                                placeholder="Nhập mã voucher..." value="${param.voucherCode}">
-                        <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.45rem;">
-                            Thử: <strong>WELCOME10</strong> (giảm 10%) hoặc <strong>SUMMER50K</strong> (giảm 50.000₫)
-                        </p>
+
                         <c:if test="${not empty voucherError}">
                             <p style="color:#b91c1c; font-size:0.85rem; margin-top:0.45rem; background:rgba(185,28,28,0.08); border:1px solid rgba(185,28,28,0.18); padding:0.45rem 0.6rem; border-radius:10px;">
                                 ⚠️ ${voucherError}
@@ -207,6 +231,14 @@
     const newTicketSubTotal = ${newTicketSubTotal};
     const voucherInput = document.getElementById('voucherCode');
 
+    const knownVouchers = {
+        'WELCOME10': { type: 'Percent',     value: 10 },
+        'SUMMER50K': { type: 'FixedAmount', value: 50000 }
+    };
+    <c:forEach items="${myVouchers}" var="v">
+    knownVouchers['${v.code}'] = { type: '${v.discountType}', value: ${v.discountValue} };
+    </c:forEach>
+
     function fmt(n) {
         return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + '₫';
     }
@@ -226,8 +258,10 @@
 
         let discount = 0;
         const code = (voucherInput?.value || '').trim().toUpperCase();
-        if (code === 'WELCOME10') discount = subTotal * 0.10;
-        else if (code === 'SUMMER50K') discount = 50000;
+        const v = knownVouchers[code];
+        if (v) {
+            discount = v.type === 'Percent' ? subTotal * v.value / 100 : v.value;
+        }
         discount = Math.max(0, Math.min(discount, subTotal));
 
         document.getElementById('foodTotalDisplay').textContent = fmt(foodTotal);
@@ -237,6 +271,29 @@
 
     document.querySelectorAll('.qty-input').forEach(i => i.addEventListener('input', recalc));
     if (voucherInput) voucherInput.addEventListener('input', recalc);
+
+    // Voucher picker: click chọn/bỏ chọn voucher cá nhân
+    document.querySelectorAll('.voucher-pick-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const code = this.dataset.code;
+            const isSelected = this.classList.contains('selected');
+            document.querySelectorAll('.voucher-pick-item').forEach(b => {
+                b.classList.remove('selected');
+                b.style.background = '#fff';
+                b.style.borderStyle = 'dashed';
+            });
+            if (!isSelected) {
+                this.classList.add('selected');
+                this.style.background = '#f0fdf4';
+                this.style.borderStyle = 'solid';
+                voucherInput.value = code;
+            } else {
+                voucherInput.value = '';
+            }
+            recalc();
+        });
+    });
+
     recalc();
 </script>
 </body>

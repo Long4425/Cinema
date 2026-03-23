@@ -6,6 +6,7 @@ import dao.BookingSeatDAO;
 import dao.FoodItemDAO;
 import dao.ShowtimeDAO;
 import dao.VoucherDAO;
+import model.User;
 import exception.DataAccessException;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -57,6 +58,12 @@ public class CheckoutServlet extends HttpServlet {
         List<BookingSeat> bookingSeats = bookingSeatDAO.findByBookingWithSeat(bookingId);
         List<FoodItem> foodItems = foodItemDAO.findAvailable();
         Showtime showtime = showtimeDAO.findById(booking.getShowtimeId());
+
+        // Voucher cá nhân của user (đổi từ điểm)
+        User sessionUser = (User) session.getAttribute("user");
+        if (sessionUser != null) {
+            req.setAttribute("myVouchers", voucherDAO.findActiveByUser(sessionUser.getUserId()));
+        }
 
         req.setAttribute("booking", booking);
         req.setAttribute("bookingSeats", bookingSeats);

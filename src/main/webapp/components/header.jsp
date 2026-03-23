@@ -35,6 +35,10 @@
                         <a href="${ctx}/profile/bookings"
                            class="header__nav-link ${activeTab == 'HISTORY' ? 'header__nav-link--active' : ''}">Lịch sử đặt vé</a>
                     </li>
+                    <li class="header__nav-item">
+                        <a href="${ctx}/profile/redeem-points"
+                           class="header__nav-link ${activeTab == 'REDEEM' ? 'header__nav-link--active' : ''}">Đổi điểm</a>
+                    </li>
                 </c:if>
                 <c:if test="${not empty sessionScope.user}">
                     <li class="header__nav-item">

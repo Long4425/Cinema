@@ -274,6 +274,18 @@ public class BookingDAO {
         }
     }
 
+    public void updatePointsEarned(int bookingId, int points) {
+        String sql = "UPDATE Bookings SET PointsEarned = ? WHERE BookingId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, points);
+            ps.setInt(2, bookingId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi cập nhật điểm tích lũy cho booking", e);
+        }
+    }
+
     public List<Booking> findByUser(int userId) {
         String sql = "SELECT * FROM Bookings WHERE UserId = ? ORDER BY CreatedAt DESC";
         List<Booking> list = new ArrayList<>();

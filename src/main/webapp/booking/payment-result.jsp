@@ -102,6 +102,50 @@
             margin-top: 1.75rem;
         }
         .result-actions .btn { flex: 1; text-align: center; }
+
+        .points-banner {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fcd34d;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #92400e;
+        }
+        .points-banner__title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+            color: #78350f;
+        }
+        .voucher-banner {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #86efac;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #166534;
+        }
+        .voucher-banner__title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: #14532d;
+        }
+        .voucher-code {
+            display: inline-block;
+            background: #fff;
+            border: 1.5px dashed #22c55e;
+            border-radius: 6px;
+            padding: 0.3rem 0.75rem;
+            font-family: monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #15803d;
+            margin: 0.2rem 0;
+            letter-spacing: 0.04em;
+        }
     </style>
 </head>
 <body class="home-layout">
@@ -130,6 +174,27 @@
 
             <%-- Transaction details --%>
             <div class="result-card__body">
+                <%-- UC-24: Thông báo điểm tích lũy --%>
+                <c:if test="${paymentStatus == 'success' and not empty pointsEarned and pointsEarned > 0}">
+                    <div class="points-banner">
+                        <div class="points-banner__title">&#127775; Điểm tích lũy</div>
+                        Bạn vừa nhận được <strong>+${pointsEarned} điểm</strong> từ giao dịch này.
+                        Tổng điểm hiện tại: <strong>${totalPoints} điểm</strong>.
+                        <br>Tích đủ <strong>10 điểm</strong> để nhận voucher giảm 20.000₫.
+                    </div>
+                </c:if>
+                <%-- UC-25: Gợi ý đổi điểm nếu tích lũy đủ --%>
+                <c:if test="${paymentStatus == 'success' and not empty totalPoints and totalPoints >= 10}">
+                    <div class="voucher-banner">
+                        <div class="voucher-banner__title">&#127873; Bạn có thể đổi voucher!</div>
+                        Bạn đang có <strong>${totalPoints} điểm</strong> — đủ để đổi voucher giảm giá.
+                        <div style="margin-top:0.75rem;">
+                            <a href="profile/redeem-points" class="btn btn-primary" style="font-size:0.875rem; padding:0.5rem 1.25rem;">
+                                Đổi điểm ngay
+                            </a>
+                        </div>
+                    </div>
+                </c:if>
                 <table class="txn-table">
                     <c:if test="${not empty vnp_TransactionNo}">
                     <tr>

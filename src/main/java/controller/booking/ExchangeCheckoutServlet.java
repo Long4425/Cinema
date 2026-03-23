@@ -109,6 +109,12 @@ public class ExchangeCheckoutServlet extends HttpServlet {
         BigDecimal oldSeatPrice = oldSeats.isEmpty() ? oldShowtime.getBasePrice() : oldSeats.get(0).getSeatPrice();
         BigDecimal newTicketSubTotal = newSeatPrice.multiply(BigDecimal.valueOf(seatCount));
 
+        // Voucher cá nhân của user (đổi từ điểm)
+        User sessionUser = (User) session.getAttribute("user");
+        if (sessionUser != null) {
+            req.setAttribute("myVouchers", voucherDAO.findActiveByUser(sessionUser.getUserId()));
+        }
+
         req.setAttribute("booking", booking);
         req.setAttribute("oldShowtime", oldShowtime);
         req.setAttribute("newShowtime", newShowtime);

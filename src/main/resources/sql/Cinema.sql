@@ -110,7 +110,8 @@ CREATE TABLE Vouchers (
     UsedCount     INT DEFAULT 0,
     ExpiredAt     DATETIME NOT NULL,
     IsActive      BIT DEFAULT 1,
-    CreatedBy     INT REFERENCES Users(UserId)
+    CreatedBy     INT REFERENCES Users(UserId),
+    OwnedByUserId INT NULL REFERENCES Users(UserId)  -- NULL = voucher công khai, có giá trị = voucher cá nhân đổi từ điểm
 );
 
 -- 8. FOOD ITEMS (Đồ ăn & thức uống)

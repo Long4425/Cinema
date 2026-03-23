@@ -3,6 +3,8 @@ package controller.payment;
 import dao.BookingDAO;
 import dao.BookingSeatDAO;
 import dao.PaymentDAO;
+import dao.UserDAO;
+import model.Booking;
 import model.Payment;
 import util.VNPayConfig;
 
@@ -20,9 +22,11 @@ import java.util.*;
 @WebServlet(name = "VNPayReturnServlet", urlPatterns = {"/payment/vnpay-return"})
 public class VNPayReturnServlet extends HttpServlet {
 
+    private static final int POINTS_PER_VND = 10_000; // 10.000đ = 1 điểm
     private final PaymentDAO paymentDAO = new PaymentDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
     private final BookingSeatDAO bookingSeatDAO = new BookingSeatDAO();
+    private final UserDAO userDAO = new UserDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -89,6 +93,21 @@ public class VNPayReturnServlet extends HttpServlet {
                     // Đặt vé thường: xác nhận booking + ghế
                     bookingDAO.updateStatus(bookingId, "Confirmed");
                     bookingSeatDAO.updateStatusByBooking(bookingId, "Confirmed");
+
+                    // UC-24: Tích điểm sau giao dịch (10.000đ = 1 điểm)
+                    Booking confirmedBooking = bookingDAO.findById(bookingId);
+                    if (confirmedBooking != null && confirmedBooking.getUserId() != null) {
+                        int userId = confirmedBooking.getUserId();
+                        long totalVnd = confirmedBooking.getTotalAmount() != null
+                                ? confirmedBooking.getTotalAmount().longValue() : 0L;
+                        int earned = (int) (totalVnd / POINTS_PER_VND);
+                        if (earned > 0) {
+                            int newTotal = userDAO.addLoyaltyPoints(userId, earned);
+                            bookingDAO.updatePointsEarned(bookingId, earned);
+                            request.setAttribute("pointsEarned", earned);
+                            request.setAttribute("totalPoints", newTotal);
+                        }
+                    }
                 }
                 // Đối với exchange: booking đã Confirmed từ trước, chỉ cập nhật payment là đủ
             } else {

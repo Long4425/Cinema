@@ -239,10 +239,15 @@ INSERT INTO FoodItems (Name, Description, Price, ImageUrl, IsAvailable) VALUES
 (N'Combo 1', N'1 Bắp M + 1 Pepsi', 55000, NULL, 1),
 (N'Combo 2', N'2 Bắp M + 2 Pepsi', 100000, NULL, 1);
 
--- VOUCHERS
-INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, ExpiredAt, IsActive, CreatedBy) VALUES
-('WELCOME10', 'Percent', 10, 100000, 100, 0, DATEADD(MONTH, 3, GETDATE()), 1, 1),
-('SUMMER50K', 'FixedAmount', 50000, 200000, 50, 0, DATEADD(MONTH, 2, GETDATE()), 1, 1);
+-- VOUCHERS (công khai: OwnedByUserId = NULL)
+INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, ExpiredAt, IsActive, CreatedBy, OwnedByUserId) VALUES
+('WELCOME10', 'Percent',     10,    100000, 100, 0, DATEADD(MONTH, 3, GETDATE()), 1, 1, NULL),
+('SUMMER50K', 'FixedAmount', 50000, 200000,  50, 0, DATEADD(MONTH, 2, GETDATE()), 1, 1, NULL);
+
+-- Voucher cá nhân mẫu cho customer@cinema.vn (UserId=4, đang có 150 điểm → đã đổi 1 voucher)
+DECLARE @custId INT = (SELECT TOP 1 UserId FROM Users WHERE Email = 'customer@cinema.vn');
+INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, ExpiredAt, IsActive, CreatedBy, OwnedByUserId) VALUES
+('POINT-' + CAST(@custId AS VARCHAR) + '-SAMPLE1', 'FixedAmount', 20000, 0, 1, 0, DATEADD(YEAR, 1, GETDATE()), 1, NULL, @custId);
 
 PRINT N'Sample data đã được thêm. Mật khẩu tất cả tài khoản: 123456';
 PRINT N'Admin: admin@cinema.vn | Manager: manager@cinema.vn | Cashier: cashier@cinema.vn';

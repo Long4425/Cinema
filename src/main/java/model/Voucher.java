@@ -14,6 +14,7 @@ public class Voucher {
     private LocalDateTime expiredAt;
     private boolean active;
     private Integer createdBy;
+    private Integer ownedByUserId; // NULL = công khai, có giá trị = voucher cá nhân đổi từ điểm
 
     public int getVoucherId() {
         return voucherId;
@@ -93,6 +94,14 @@ public class Voucher {
 
     public void setCreatedBy(Integer createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public Integer getOwnedByUserId() {
+        return ownedByUserId;
+    }
+
+    public void setOwnedByUserId(Integer ownedByUserId) {
+        this.ownedByUserId = ownedByUserId;
     }
 }
 

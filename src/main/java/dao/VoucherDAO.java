@@ -96,6 +96,49 @@ public class VoucherDAO {
         }
     }
 
+    /**
+     * Tạo voucher cá nhân cho user khi đổi điểm.
+     * @param userId    user nhận voucher
+     * @param value     mệnh giá voucher (VD: 20000, 50000, 100000, 200000)
+     * @param pointCost số điểm đã trừ (dùng để sinh code dễ nhận biết)
+     * Trả về code của voucher vừa tạo.
+     */
+    public String createForUser(int userId, int value, int pointCost) {
+        String code = "POINT" + pointCost + "P-" + userId + "-" + System.currentTimeMillis();
+        String sql = "INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, ExpiredAt, IsActive, CreatedBy, OwnedByUserId) "
+                + "VALUES (?, 'FixedAmount', ?, 0, 1, 0, ?, 1, NULL, ?)";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            ps.setBigDecimal(2, new java.math.BigDecimal(value));
+            ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now().plusYears(1)));
+            ps.setInt(4, userId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi tạo voucher đổi điểm", e);
+        }
+        return code;
+    }
+
+    /**
+     * Lấy danh sách voucher cá nhân còn hiệu lực của user (đổi từ điểm).
+     */
+    public List<Voucher> findActiveByUser(int userId) {
+        String sql = "SELECT VoucherId, Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, ExpiredAt, IsActive, CreatedBy, OwnedByUserId "
+                + "FROM Vouchers WHERE OwnedByUserId = ? AND IsActive = 1 AND ExpiredAt > GETDATE() AND UsedCount < MaxUsage ORDER BY ExpiredAt ASC";
+        List<Voucher> list = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(map(rs));
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy voucher của user", e);
+        }
+        return list;
+    }
+
     private Voucher map(ResultSet rs) throws SQLException {
         Voucher v = new Voucher();
         v.setVoucherId(rs.getInt("VoucherId"));
@@ -110,6 +153,8 @@ public class VoucherDAO {
         v.setActive(rs.getBoolean("IsActive"));
         int createdBy = rs.getInt("CreatedBy");
         v.setCreatedBy(rs.wasNull() ? null : createdBy);
+        int ownedBy = rs.getInt("OwnedByUserId");
+        v.setOwnedByUserId(rs.wasNull() ? null : ownedBy);
         return v;
     }
 }
