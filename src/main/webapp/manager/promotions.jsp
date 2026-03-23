@@ -16,6 +16,33 @@
     <link rel="stylesheet" href="css/table.css">
     <link rel="stylesheet" href="css/button.css">
     <link rel="stylesheet" href="css/badge.css">
+    <link rel="stylesheet" href="css/form.css">
+    <style>
+        .select-wrap {
+            position: relative;
+        }
+        .select-wrap::after {
+            content: '▾';
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .select-wrap select.form-input {
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 2rem;
+            cursor: pointer;
+        }
+        .form-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+    </style>
 </head>
 <body class="dashboard-layout">
 <jsp:include page="/components/header.jsp"/>
@@ -37,40 +64,52 @@
             <div class="grid" style="display:grid;grid-template-columns:1.2fr 2fr;gap:1.5rem;align-items:flex-start;">
                 <div class="card" style="padding:1.25rem;">
                     <h2 style="font-size:1rem;margin-bottom:0.75rem;">Tạo voucher mới</h2>
-                    <form method="post" action="manager/promotions" class="form" style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <form method="post" action="manager/promotions">
                         <input type="hidden" name="action" value="create">
                         <div class="form-group">
                             <label class="form-label" for="code">Mã voucher</label>
-                            <input type="text" id="code" name="code" class="form-input" placeholder="VD: WEEKEND20" required>
+                            <input type="text" id="code" name="code" class="form-input"
+                                   placeholder="VD: WEEKEND20" required
+                                   style="text-transform:uppercase;">
+                            <span class="form-hint">Chỉ dùng chữ hoa, số và dấu gạch ngang.</span>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="discountType">Loại giảm giá</label>
-                            <select id="discountType" name="discountType" class="form-input">
-                                <option value="Percent">Phần trăm (%)</option>
-                                <option value="FixedAmount">Số tiền cố định</option>
-                            </select>
+                            <div class="select-wrap">
+                                <select id="discountType" name="discountType" class="form-input"
+                                        onchange="updateDiscountHint(this)">
+                                    <option value="Percent">Phần trăm (%)</option>
+                                    <option value="FixedAmount">Số tiền cố định (₫)</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="discountValue">Giá trị giảm</label>
-                            <input type="number" step="1000" min="0" id="discountValue" name="discountValue" class="form-input" placeholder="VD: 20000 cho 20k hoặc 20 cho 20%">
+                            <input type="number" step="1" min="0" id="discountValue" name="discountValue"
+                                   class="form-input" placeholder="VD: 20 (%) hoặc 50000 (₫)" required>
+                            <span class="form-hint" id="discountHint">Nhập số phần trăm, ví dụ: 10 = giảm 10%.</span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="minOrderValue">Đơn tối thiểu</label>
-                            <input type="number" step="1000" min="0" id="minOrderValue" name="minOrderValue" class="form-input" placeholder="VD: 100000">
+                            <label class="form-label" for="minOrderValue">Đơn hàng tối thiểu (₫)</label>
+                            <input type="number" step="1000" min="0" id="minOrderValue" name="minOrderValue"
+                                   class="form-input" placeholder="VD: 100000" required>
+                            <span class="form-hint">Voucher chỉ áp dụng khi tổng đơn ≥ mức này.</span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="maxUsage">Số lần sử dụng tối đa</label>
-                            <input type="number" min="1" id="maxUsage" name="maxUsage" class="form-input" value="100">
+                            <label class="form-label" for="maxUsage">Số lần dùng tối đa</label>
+                            <input type="number" min="1" id="maxUsage" name="maxUsage"
+                                   class="form-input" value="100" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="startAt">Ngày bắt đầu <span style="font-weight:400;color:var(--text-muted);">(để trống = áp dụng ngay)</span></label>
+                            <label class="form-label" for="startAt">Ngày bắt đầu</label>
                             <input type="date" id="startAt" name="startAt" class="form-input">
+                            <span class="form-hint">Để trống = áp dụng ngay. Có giá trị = Flash Sale.</span>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="expiredAt">Ngày hết hạn</label>
                             <input type="date" id="expiredAt" name="expiredAt" class="form-input" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Tạo voucher</button>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Tạo voucher</button>
                     </form>
                 </div>
 
@@ -121,7 +160,7 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty v.startAt}">
-                                                    <fmt:formatDate value="${v.startAt}" pattern="dd/MM/yyyy"/>
+                                                    ${v.startAt.dayOfMonth}/${v.startAt.monthValue}/${v.startAt.year}
                                                     <span class="badge badge-warning" style="font-size:0.7rem;margin-left:0.25rem;">Flash Sale</span>
                                                 </c:when>
                                                 <c:otherwise>
@@ -130,7 +169,7 @@
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <fmt:formatDate value="${v.expiredAt}" pattern="dd/MM/yyyy"/>
+                                            ${v.expiredAt.dayOfMonth}/${v.expiredAt.monthValue}/${v.expiredAt.year}
                                         </td>
                                         <td>${v.usedCount} / ${v.maxUsage}</td>
                                         <td>
@@ -169,6 +208,21 @@
 </div>
 
 <jsp:include page="/components/footer.jsp"/>
+<script>
+function updateDiscountHint(select) {
+    const hint = document.getElementById('discountHint');
+    const input = document.getElementById('discountValue');
+    if (select.value === 'Percent') {
+        hint.textContent = 'Nhập số phần trăm, ví dụ: 10 = giảm 10%.';
+        input.placeholder = 'VD: 10 (%)';
+        input.step = '1';
+    } else {
+        hint.textContent = 'Nhập số tiền, ví dụ: 50000 = giảm 50.000 ₫.';
+        input.placeholder = 'VD: 50000 (₫)';
+        input.step = '1000';
+    }
+}
+</script>
 </body>
 </html>
 

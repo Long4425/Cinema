@@ -65,6 +65,9 @@ public class CheckoutServlet extends HttpServlet {
             req.setAttribute("myVouchers", voucherDAO.findActiveByUser(sessionUser.getUserId()));
         }
 
+        // Voucher công khai còn hiệu lực (public + flash sale đang chạy)
+        req.setAttribute("publicVouchers", voucherDAO.findAllPublicActive());
+
         req.setAttribute("booking", booking);
         req.setAttribute("bookingSeats", bookingSeats);
         req.setAttribute("foodItems", foodItems);

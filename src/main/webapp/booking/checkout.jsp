@@ -136,13 +136,19 @@
                         <%-- Voucher cá nhân từ điểm --%>
                         <c:if test="${not empty myVouchers}">
                             <div style="margin-bottom:0.75rem;">
-                                <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">VOUCHER CỦA BẠN</div>
+                                <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;letter-spacing:0.04em;">VOUCHER CỦA BẠN</div>
                                 <div style="display:flex;flex-direction:column;gap:0.4rem;">
                                     <c:forEach items="${myVouchers}" var="v">
-                                        <button type="button" class="voucher-pick-item" data-code="${v.code}"
+                                        <button type="button" class="voucher-pick-item"
+                                                data-code="${v.code}"
+                                                data-type="${v.discountType}"
+                                                data-value="${v.discountValue}"
                                                 style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;border:1.5px dashed #22c55e;border-radius:8px;padding:0.5rem 0.75rem;cursor:pointer;background:#fff;transition:background .15s;text-align:left;">
-                                            <span style="font-family:monospace;font-weight:700;font-size:0.9rem;color:#15803d;">${v.code}</span>
-                                            <span style="font-weight:600;color:#166534;white-space:nowrap;">
+                                            <div>
+                                                <div style="font-family:monospace;font-weight:700;font-size:0.9rem;color:#15803d;">${v.code}</div>
+                                                <div style="font-size:0.75rem;color:var(--text-muted);">Hết hạn: ${v.expiredAt.dayOfMonth}/${v.expiredAt.monthValue}/${v.expiredAt.year}</div>
+                                            </div>
+                                            <span style="font-weight:700;color:#166534;white-space:nowrap;font-size:0.9rem;">
                                                 -<fmt:formatNumber value="${v.discountValue}" type="number" maxFractionDigits="0"/>₫
                                             </span>
                                         </button>
@@ -151,19 +157,54 @@
                             </div>
                         </c:if>
 
-                        <%-- Nhập mã thủ công (voucher công khai) --%>
-                        <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">
-                            <c:choose>
-                                <c:when test="${not empty myVouchers}">HOẶC NHẬP MÃ KHÁC</c:when>
-                                <c:otherwise>NHẬP MÃ VOUCHER</c:otherwise>
-                            </c:choose>
-                        </div>
+                        <%-- Voucher công khai + Flash Sale --%>
+                        <c:if test="${not empty publicVouchers}">
+                            <div style="margin-bottom:0.75rem;">
+                                <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;letter-spacing:0.04em;">
+                                    <c:choose>
+                                        <c:when test="${not empty myVouchers}">HOẶC CHỌN MÃ KHUYẾN MÃI</c:when>
+                                        <c:otherwise>CHỌN MÃ KHUYẾN MÃI</c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div style="display:flex;flex-direction:column;gap:0.4rem;">
+                                    <c:forEach items="${publicVouchers}" var="v">
+                                        <button type="button" class="voucher-pick-item"
+                                                data-code="${v.code}"
+                                                data-type="${v.discountType}"
+                                                data-value="${v.discountValue}"
+                                                style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;border:1.5px dashed var(--primary);border-radius:8px;padding:0.5rem 0.75rem;cursor:pointer;background:#fff;transition:background .15s;text-align:left;">
+                                            <div>
+                                                <div style="display:flex;align-items:center;gap:0.4rem;">
+                                                    <span style="font-family:monospace;font-weight:700;font-size:0.9rem;color:var(--primary);">${v.code}</span>
+                                                    <c:if test="${not empty v.startAt}">
+                                                        <span style="font-size:0.68rem;font-weight:700;background:#fef9c3;color:#854d0e;border-radius:4px;padding:0.1rem 0.35rem;">FLASH SALE</span>
+                                                    </c:if>
+                                                </div>
+                                                <div style="font-size:0.75rem;color:var(--text-muted);">
+                                                    Còn ${v.maxUsage - v.usedCount} lượt &nbsp;·&nbsp; HSD: ${v.expiredAt.dayOfMonth}/${v.expiredAt.monthValue}/${v.expiredAt.year}
+                                                </div>
+                                            </div>
+                                            <span style="font-weight:700;color:var(--primary);white-space:nowrap;font-size:0.9rem;">
+                                                <c:choose>
+                                                    <c:when test="${v.discountType == 'Percent'}">-${v.discountValue}%</c:when>
+                                                    <c:otherwise>-<fmt:formatNumber value="${v.discountValue}" type="number" maxFractionDigits="0"/>₫</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                        </button>
+                                    </c:forEach>
+                                </div>
+                            </div>
+                        </c:if>
+
+                        <%-- Nhập mã thủ công --%>
+                        <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;letter-spacing:0.04em;">HOẶC NHẬP MÃ THỦ CÔNG</div>
                         <input type="text"
                                id="voucherCode"
                                name="voucherCode"
                                class="form-input"
                                placeholder="Nhập mã voucher..."
-                               value="${param.voucherCode}">
+                               value="${param.voucherCode}"
+                               style="text-transform:uppercase;">
 
                         <c:if test="${not empty voucherError}">
                             <p style="color:#b91c1c;font-size:0.85rem;margin-top:0.45rem;background:rgba(185,28,28,0.08);border:1px solid rgba(185,28,28,0.18);padding:0.45rem 0.6rem;border-radius:10px;">
@@ -193,14 +234,11 @@
     const ticketSubTotal = ${booking.subTotal != null ? booking.subTotal : 0};
     const voucherInput = document.getElementById('voucherCode');
 
-    // Map code → {type, value} cho tất cả voucher: cả công khai lẫn cá nhân
-    const knownVouchers = {
-        'WELCOME10': { type: 'Percent',      value: 10 },
-        'SUMMER50K': { type: 'FixedAmount',  value: 50000 }
-    };
-    <c:forEach items="${myVouchers}" var="v">
-    knownVouchers['${v.code}'] = { type: '${v.discountType}', value: ${v.discountValue} };
-    </c:forEach>
+    // Map code → {type, value} — build từ data attributes của picker buttons (không hardcode)
+    const knownVouchers = {};
+    document.querySelectorAll('.voucher-pick-item').forEach(btn => {
+        knownVouchers[btn.dataset.code] = { type: btn.dataset.type, value: parseFloat(btn.dataset.value) };
+    });
 
     function fmt(n) {
         return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + '₫';

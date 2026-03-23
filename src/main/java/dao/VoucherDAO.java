@@ -50,6 +50,29 @@ public class VoucherDAO {
 
     private static final String SELECT_ALL = "SELECT VoucherId, Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, StartAt, ExpiredAt, IsActive, CreatedBy, OwnedByUserId FROM Vouchers ";
 
+    /**
+     * Voucher công khai còn hiệu lực (hiển thị cho user chọn tại checkout).
+     * Điều kiện: OwnedByUserId IS NULL, IsActive=1, còn lượt dùng,
+     *            đã đến ngày bắt đầu (StartAt), chưa hết hạn.
+     */
+    public List<Voucher> findAllPublicActive() {
+        String sql = SELECT_ALL
+                + "WHERE OwnedByUserId IS NULL AND IsActive = 1 "
+                + "AND (StartAt IS NULL OR StartAt <= GETDATE()) "
+                + "AND ExpiredAt > GETDATE() "
+                + "AND UsedCount < MaxUsage "
+                + "ORDER BY DiscountValue DESC";
+        List<Voucher> list = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(map(rs));
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy voucher công khai", e);
+        }
+        return list;
+    }
+
     public List<Voucher> findAll() {
         String sql = SELECT_ALL + "ORDER BY CreatedBy, VoucherId DESC";
         List<Voucher> list = new ArrayList<>();
