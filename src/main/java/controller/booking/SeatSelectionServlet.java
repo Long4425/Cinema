@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,6 +25,7 @@ import model.BookingSeat;
 import model.Seat;
 import model.Showtime;
 import model.User;
+import util.PricingUtil;
 
 @WebServlet(name = "SeatSelectionServlet", urlPatterns = {"/booking/seat-selection"})
 public class SeatSelectionServlet extends HttpServlet {
@@ -107,7 +110,6 @@ public class SeatSelectionServlet extends HttpServlet {
                 return;
             }
 
-            // Tạm thời tính giá ghế = BasePrice của suất chiếu, sau này có thể nhân hệ số theo loại ghế
             BigDecimal basePrice = showtime.getBasePrice();
             List<Integer> seatIds = new ArrayList<>();
             for (String s : seatIdParams) {
@@ -136,16 +138,30 @@ public class SeatSelectionServlet extends HttpServlet {
                 }
             }
 
+            // Lấy thông tin ghế để tính giá theo SeatType và ngày cuối tuần
+            List<Seat> seatList = seatDAO.findByIds(seatIds);
+            Map<Integer, Seat> seatMap = new HashMap<>();
+            for (Seat seat : seatList) {
+                seatMap.put(seat.getSeatId(), seat);
+            }
+
             // Tạo booking ở trạng thái Pending, loại ONLINE
             User user = (User) session.getAttribute("user");
             int userId = user.getUserId();
+
+            // Tính subTotal theo giá từng ghế (SeatType + cuối tuần)
+            BigDecimal subTotal = BigDecimal.ZERO;
+            for (Integer seatId : seatIds) {
+                Seat seat = seatMap.get(seatId);
+                String seatType = (seat != null) ? seat.getSeatType() : "Standard";
+                subTotal = subTotal.add(PricingUtil.calcSeatPrice(basePrice, seatType, showtime.getStartTime()));
+            }
 
             Booking booking = new Booking();
             booking.setUserId(userId);
             booking.setShowtimeId(showtimeId);
             booking.setBookingType("ONLINE");
             booking.setStatus("Pending");
-            BigDecimal subTotal = basePrice.multiply(BigDecimal.valueOf(seatIds.size()));
             booking.setSubTotal(subTotal);
             booking.setDiscountAmount(BigDecimal.ZERO);
             booking.setTotalAmount(subTotal);
@@ -157,11 +173,14 @@ public class SeatSelectionServlet extends HttpServlet {
             LocalDateTime heldUntil = LocalDateTime.now().plusMinutes(15);
             List<BookingSeat> bookingSeats = new ArrayList<>();
             for (Integer seatId : seatIds) {
+                Seat seat = seatMap.get(seatId);
+                String seatType = (seat != null) ? seat.getSeatType() : "Standard";
+                BigDecimal seatPrice = PricingUtil.calcSeatPrice(basePrice, seatType, showtime.getStartTime());
                 BookingSeat bs = new BookingSeat();
                 bs.setBookingId(bookingId);
                 bs.setSeatId(seatId);
                 bs.setShowtimeId(showtimeId);
-                bs.setSeatPrice(basePrice);
+                bs.setSeatPrice(seatPrice);
                 bs.setStatus("Held");
                 bs.setHeldUntil(heldUntil);
                 bookingSeats.add(bs);

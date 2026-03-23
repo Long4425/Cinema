@@ -11,6 +11,7 @@ public class Voucher {
     private BigDecimal minOrderValue;
     private int maxUsage;
     private int usedCount;
+    private LocalDateTime startAt;   // NULL = áp dụng ngay; có giá trị = Flash Sale bắt đầu từ thời điểm này
     private LocalDateTime expiredAt;
     private boolean active;
     private Integer createdBy;
@@ -70,6 +71,14 @@ public class Voucher {
 
     public void setUsedCount(int usedCount) {
         this.usedCount = usedCount;
+    }
+
+    public LocalDateTime getStartAt() {
+        return startAt;
+    }
+
+    public void setStartAt(LocalDateTime startAt) {
+        this.startAt = startAt;
     }
 
     public LocalDateTime getExpiredAt() {

@@ -40,7 +40,8 @@
                         <strong>Phim:</strong> <c:out value="${showtime.movieTitle}"/><br>
                         <strong>Phòng:</strong> <c:out value="${showtime.roomName}"/><br>
                         <strong>Thời gian:</strong>
-                        <fmt:formatDate value="${showtime.startTime}" pattern="HH:mm dd/MM/yyyy"/>
+                        <fmt:formatNumber value="${showtime.startTime.hour}" minIntegerDigits="2"/>:<fmt:formatNumber value="${showtime.startTime.minute}" minIntegerDigits="2"/>
+                        ${showtime.startTime.dayOfMonth}/${showtime.startTime.monthValue}/${showtime.startTime.year}
                     </p>
                 </div>
 

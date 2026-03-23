@@ -63,6 +63,10 @@
                             <input type="number" min="1" id="maxUsage" name="maxUsage" class="form-input" value="100">
                         </div>
                         <div class="form-group">
+                            <label class="form-label" for="startAt">Ngày bắt đầu <span style="font-weight:400;color:var(--text-muted);">(để trống = áp dụng ngay)</span></label>
+                            <input type="date" id="startAt" name="startAt" class="form-input">
+                        </div>
+                        <div class="form-group">
                             <label class="form-label" for="expiredAt">Ngày hết hạn</label>
                             <input type="date" id="expiredAt" name="expiredAt" class="form-input" required>
                         </div>
@@ -84,6 +88,7 @@
                                     <th>Loại</th>
                                     <th>Giá trị</th>
                                     <th>Đơn tối thiểu</th>
+                                    <th>Từ ngày</th>
                                     <th>HSD</th>
                                     <th>Đã dùng / Tối đa</th>
                                     <th>Trạng thái</th>
@@ -112,6 +117,17 @@
                                         </td>
                                         <td>
                                             <fmt:formatNumber value="${v.minOrderValue}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty v.startAt}">
+                                                    <fmt:formatDate value="${v.startAt}" pattern="dd/MM/yyyy"/>
+                                                    <span class="badge badge-warning" style="font-size:0.7rem;margin-left:0.25rem;">Flash Sale</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span style="color:var(--text-muted);font-size:0.85rem;">Ngay</span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                         <td>
                                             <fmt:formatDate value="${v.expiredAt}" pattern="dd/MM/yyyy"/>

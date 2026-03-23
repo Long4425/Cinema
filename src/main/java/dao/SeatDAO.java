@@ -72,6 +72,28 @@ public class SeatDAO {
         }
     }
 
+    public List<Seat> findByIds(List<Integer> seatIds) {
+        if (seatIds == null || seatIds.isEmpty()) return new ArrayList<>();
+        StringBuilder sb = new StringBuilder("SELECT * FROM Seats WHERE SeatId IN (");
+        for (int i = 0; i < seatIds.size(); i++) {
+            sb.append(i == 0 ? "?" : ",?");
+        }
+        sb.append(")");
+        List<Seat> seats = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sb.toString())) {
+            for (int i = 0; i < seatIds.size(); i++) {
+                ps.setInt(i + 1, seatIds.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) seats.add(mapSeat(rs));
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy danh sách ghế theo ID", e);
+        }
+        return seats;
+    }
+
     public boolean updateSeatType(int seatId, String seatType) {
         String sql = "UPDATE Seats SET SeatType = ? WHERE SeatId = ?";
         try (Connection conn = dbContext.getConnection();

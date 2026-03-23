@@ -108,6 +108,7 @@ CREATE TABLE Vouchers (
     MinOrderValue DECIMAL(10,2) DEFAULT 0,
     MaxUsage      INT DEFAULT 1,
     UsedCount     INT DEFAULT 0,
+    StartAt       DATETIME NULL,                -- NULL = áp dụng ngay; có giá trị = Flash Sale bắt đầu từ thời điểm này
     ExpiredAt     DATETIME NOT NULL,
     IsActive      BIT DEFAULT 1,
     CreatedBy     INT REFERENCES Users(UserId),

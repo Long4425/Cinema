@@ -44,12 +44,16 @@ public class PromotionManagementServlet extends HttpServlet {
             BigDecimal value = new BigDecimal(req.getParameter("discountValue"));
             BigDecimal minOrder = new BigDecimal(req.getParameter("minOrderValue"));
             int maxUsage = Integer.parseInt(req.getParameter("maxUsage"));
+            String startStr = req.getParameter("startAt");
             String expiredStr = req.getParameter("expiredAt");
 
             if (code == null || code.isBlank()) {
                 return;
             }
 
+            LocalDateTime startAt = (startStr != null && !startStr.isBlank())
+                    ? LocalDateTime.parse(startStr + "T00:00:00")
+                    : null;
             LocalDateTime expiredAt = LocalDateTime.parse(expiredStr + "T23:59:59");
 
             Voucher v = new Voucher();
@@ -58,11 +62,13 @@ public class PromotionManagementServlet extends HttpServlet {
             v.setDiscountValue(value);
             v.setMinOrderValue(minOrder);
             v.setMaxUsage(maxUsage);
+            v.setStartAt(startAt);
             v.setExpiredAt(expiredAt);
             v.setActive(true);
 
             voucherDAO.create(v);
         } catch (NumberFormatException | DateTimeParseException ignored) {
+            // Dữ liệu form không hợp lệ — bỏ qua, không tạo voucher
         }
     }
 
@@ -72,6 +78,7 @@ public class PromotionManagementServlet extends HttpServlet {
             boolean active = Boolean.parseBoolean(req.getParameter("active"));
             voucherDAO.updateActive(voucherId, !active);
         } catch (NumberFormatException ignored) {
+            // ID không hợp lệ — bỏ qua
         }
     }
 }

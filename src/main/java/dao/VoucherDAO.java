@@ -17,8 +17,10 @@ public class VoucherDAO {
     private final DBContext dbContext = new DBContext();
 
     public Voucher findValidByCode(String code, BigDecimal orderTotal) {
-        String sql = "SELECT * FROM Vouchers "
-                + "WHERE Code = ? AND IsActive = 1 AND ExpiredAt > GETDATE() "
+        String sql = SELECT_ALL
+                + "WHERE Code = ? AND IsActive = 1 "
+                + "AND (StartAt IS NULL OR StartAt <= GETDATE()) "
+                + "AND ExpiredAt > GETDATE() "
                 + "AND UsedCount < MaxUsage AND MinOrderValue <= ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -46,8 +48,10 @@ public class VoucherDAO {
         }
     }
 
+    private static final String SELECT_ALL = "SELECT VoucherId, Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, StartAt, ExpiredAt, IsActive, CreatedBy, OwnedByUserId FROM Vouchers ";
+
     public List<Voucher> findAll() {
-        String sql = "SELECT * FROM Vouchers ORDER BY CreatedBy, VoucherId DESC";
+        String sql = SELECT_ALL + "ORDER BY CreatedBy, VoucherId DESC";
         List<Voucher> list = new ArrayList<>();
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -62,8 +66,8 @@ public class VoucherDAO {
     }
 
     public void create(Voucher v) {
-        String sql = "INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, ExpiredAt, IsActive, CreatedBy) "
-                + "VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)";
+        String sql = "INSERT INTO Vouchers (Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, StartAt, ExpiredAt, IsActive, CreatedBy) "
+                + "VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, v.getCode());
@@ -71,12 +75,17 @@ public class VoucherDAO {
             ps.setBigDecimal(3, v.getDiscountValue());
             ps.setBigDecimal(4, v.getMinOrderValue());
             ps.setInt(5, v.getMaxUsage());
-            ps.setTimestamp(6, Timestamp.valueOf(v.getExpiredAt()));
-            ps.setBoolean(7, v.isActive());
-            if (v.getCreatedBy() != null) {
-                ps.setInt(8, v.getCreatedBy());
+            if (v.getStartAt() != null) {
+                ps.setTimestamp(6, Timestamp.valueOf(v.getStartAt()));
             } else {
-                ps.setNull(8, java.sql.Types.INTEGER);
+                ps.setNull(6, java.sql.Types.TIMESTAMP);
+            }
+            ps.setTimestamp(7, Timestamp.valueOf(v.getExpiredAt()));
+            ps.setBoolean(8, v.isActive());
+            if (v.getCreatedBy() != null) {
+                ps.setInt(9, v.getCreatedBy());
+            } else {
+                ps.setNull(9, java.sql.Types.INTEGER);
             }
             ps.executeUpdate();
         } catch (ClassNotFoundException | SQLException e) {
@@ -124,8 +133,8 @@ public class VoucherDAO {
      * Lấy danh sách voucher cá nhân còn hiệu lực của user (đổi từ điểm).
      */
     public List<Voucher> findActiveByUser(int userId) {
-        String sql = "SELECT VoucherId, Code, DiscountType, DiscountValue, MinOrderValue, MaxUsage, UsedCount, ExpiredAt, IsActive, CreatedBy, OwnedByUserId "
-                + "FROM Vouchers WHERE OwnedByUserId = ? AND IsActive = 1 AND ExpiredAt > GETDATE() AND UsedCount < MaxUsage ORDER BY ExpiredAt ASC";
+        String sql = SELECT_ALL
+                + "WHERE OwnedByUserId = ? AND IsActive = 1 AND ExpiredAt > GETDATE() AND UsedCount < MaxUsage ORDER BY ExpiredAt ASC";
         List<Voucher> list = new ArrayList<>();
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -148,6 +157,8 @@ public class VoucherDAO {
         v.setMinOrderValue(rs.getBigDecimal("MinOrderValue"));
         v.setMaxUsage(rs.getInt("MaxUsage"));
         v.setUsedCount(rs.getInt("UsedCount"));
+        Timestamp startAt = rs.getTimestamp("StartAt");
+        v.setStartAt(startAt != null ? startAt.toLocalDateTime() : null);
         Timestamp expired = rs.getTimestamp("ExpiredAt");
         v.setExpiredAt(expired != null ? expired.toLocalDateTime() : LocalDateTime.now());
         v.setActive(rs.getBoolean("IsActive"));
