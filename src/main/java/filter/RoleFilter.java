@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import model.User;
 
@@ -39,6 +38,17 @@ import model.User;
  * để tài nguyên tĩnh luôn được phục vụ trực tiếp.
  */
 public class RoleFilter implements Filter {
+
+    private static final String ROLE_ADMIN    = "ADMIN";
+    private static final String ROLE_MANAGER  = "MANAGER";
+    private static final String ROLE_CASHIER  = "CASHIER";
+    private static final String ROLE_CUSTOMER = "CUSTOMER";
+
+    // URL mà CASHIER được phép dùng trong khu vực /manager
+    private static final List<String> CASHIER_MANAGER_PATHS = List.of(
+            "/manager/booking/cash-payment",
+            "/manager/ticket-checkin"
+    );
 
     private static final List<String> PUBLIC_PREFIXES = List.of(
             "/login",
@@ -130,6 +140,10 @@ public class RoleFilter implements Filter {
         return false;
     }
 
+    private boolean isManagerOrAdmin(String roleCode) {
+        return ROLE_MANAGER.equals(roleCode) || ROLE_ADMIN.equals(roleCode);
+    }
+
     private boolean isAuthorized(String path, String roleCode) {
         if (roleCode == null) {
             return false;
@@ -137,24 +151,37 @@ public class RoleFilter implements Filter {
 
         // Khu vực Admin
         if (path.startsWith("/admin")) {
-            return "ADMIN".equals(roleCode);
+            return ROLE_ADMIN.equals(roleCode);
         }
 
-        // Khu vực Manager
-        if (path.startsWith("/manager") || path.startsWith("/request")) {
-            return "MANAGER".equals(roleCode) || "ADMIN".equals(roleCode);
+        // Khu vực Manager — một số URL CASHIER cũng được phép
+        if (path.startsWith("/manager")) {
+            if (isManagerOrAdmin(roleCode)) return true;
+            if (ROLE_CASHIER.equals(roleCode)) {
+                return CASHIER_MANAGER_PATHS.stream().anyMatch(path::startsWith);
+            }
+            return false;
+        }
+
+        if (path.startsWith("/request")) {
+            return isManagerOrAdmin(roleCode);
         }
 
         // Khu vực quầy Cashier
         if (path.startsWith("/counter")) {
-            return "CASHIER".equals(roleCode) || "MANAGER".equals(roleCode);
+            return ROLE_CASHIER.equals(roleCode) || isManagerOrAdmin(roleCode);
+        }
+
+        // Quản lý booking (cashier + manager + admin)
+        if (path.startsWith("/staff/bookings")) {
+            return ROLE_CASHIER.equals(roleCode) || isManagerOrAdmin(roleCode);
         }
 
         // Module đặt vé / xem phim
         if (path.startsWith("/movies")
                 || path.startsWith("/showtimes")
                 || path.startsWith("/booking")) {
-            return Arrays.asList("CUSTOMER", "CASHIER", "MANAGER", "ADMIN").contains(roleCode);
+            return List.of(ROLE_CUSTOMER, ROLE_CASHIER, ROLE_MANAGER, ROLE_ADMIN).contains(roleCode);
         }
 
         // Trang nội bộ (dashboard, auth JSPs, components, profile)

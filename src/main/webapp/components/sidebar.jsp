@@ -47,8 +47,8 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="${ctx}/counter/payment"
-                                            class="sidebar__link ${uri.contains('/counter/payment') ? 'sidebar__link--active' : ''}">
+                                        <a href="${ctx}/manager/booking/cash-payment"
+                                            class="sidebar__link ${uri.contains('/manager/booking/cash-payment') ? 'sidebar__link--active' : ''}">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 class="sidebar__icon">
                                                 <rect x="3" y="5" width="18" height="14" rx="3" />
@@ -60,8 +60,8 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="${ctx}/counter/checkin"
-                                            class="sidebar__link ${uri.contains('/counter/checkin') ? 'sidebar__link--active' : ''}">
+                                        <a href="${ctx}/manager/ticket-checkin"
+                                            class="sidebar__link ${uri.contains('/manager/ticket-checkin') ? 'sidebar__link--active' : ''}">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 class="sidebar__icon">
                                                 <path d="M5 12l5 5l10 -10" />
@@ -70,8 +70,8 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="${ctx}/counter/bookings"
-                                            class="sidebar__link ${uri.contains('/counter/bookings') ? 'sidebar__link--active' : ''}">
+                                        <a href="${ctx}/staff/bookings"
+                                            class="sidebar__link ${uri.contains('/staff/bookings') ? 'sidebar__link--active' : ''}">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 class="sidebar__icon">
                                                 <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -79,7 +79,7 @@
                                                 <line x1="9" y1="16" x2="15" y2="16" />
                                                 <line x1="9" y1="8" x2="15" y2="8" />
                                             </svg>
-                                            Quản lý đặt chỗ
+                                            Quản lý đặt chỗ / Hoàn vé
                                         </a>
                                     </li>
                                 </ul>
@@ -241,8 +241,8 @@
                                     <span class="sidebar__group-title">Đặt chỗ</span>
                                     <ul class="sidebar__menu">
                                         <li>
-                                            <a href="${ctx}/manager/bookings"
-                                                class="sidebar__link ${uri.contains('/manager/bookings') ? 'sidebar__link--active' : ''}">
+                                            <a href="${ctx}/staff/bookings"
+                                                class="sidebar__link ${uri.contains('/staff/bookings') ? 'sidebar__link--active' : ''}">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                     stroke-width="2" class="sidebar__icon">
                                                     <path d="M9 5h10l2 2l-2 2h-10a2 2 0 0 1 -2 -2v-0a2 2 0 0 1 2 -2z" />

@@ -71,18 +71,27 @@ public class BookingCancelServlet extends HttpServlet {
                 return;
             }
 
-            // Xử lý hoàn tiền nội bộ (không gọi API VNPay)
-            Payment payment = paymentDAO.findLatestByBooking(bookingId);
-            if (payment != null && !"Refunded".equalsIgnoreCase(payment.getStatus())) {
-                Integer refundedBy = isStaff ? user.getUserId() : null;
-                paymentDAO.markRefunded(payment.getPaymentId(), refundedBy);
-            }
-
             bookingDAO.updateStatus(bookingId, "Cancelled");
             bookingSeatDAO.updateStatusByBooking(bookingId, "Cancelled");
 
-            session.setAttribute("success", "Đã hủy vé và hoàn tiền (nếu có) thành công.");
-            resp.sendRedirect(req.getContextPath() + "/profile/bookings");
+            if (isStaff) {
+                // Staff hủy: đánh dấu hoàn tiền ngay tại quầy
+                Payment payment = paymentDAO.findLatestByBooking(bookingId);
+                if (payment != null && !"Refunded".equalsIgnoreCase(payment.getStatus())) {
+                    paymentDAO.markRefunded(payment.getPaymentId(), user.getUserId());
+                }
+                session.setAttribute("success", "Đã hủy vé #" + bookingId + " và đánh dấu hoàn tiền thành công.");
+                String redirectBack = req.getParameter("redirectBack");
+                if ("staff".equals(redirectBack)) {
+                    resp.sendRedirect(req.getContextPath() + "/staff/bookings");
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/profile/bookings");
+                }
+            } else {
+                // Customer hủy: chỉ cancel, chờ ra quầy nhận tiền hoàn
+                session.setAttribute("success", "Đã hủy vé #" + bookingId + " thành công. Vui lòng mang mã đơn đến quầy rạp để nhận lại tiền.");
+                resp.sendRedirect(req.getContextPath() + "/profile/bookings");
+            }
         } catch (NumberFormatException e) {
             resp.sendRedirect(req.getContextPath() + "/profile/bookings");
         }

@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import model.Booking;
+import model.Movie;
+import model.Showtime;
+import model.User;
 
 public class BookingDAO {
 
@@ -117,6 +120,143 @@ public class BookingDAO {
             ps.executeUpdate();
         } catch (ClassNotFoundException | SQLException e) {
             throw new DataAccessException("Lỗi cập nhật tiền và voucher cho booking", e);
+        }
+    }
+
+    /**
+     * Đếm tổng số booking thỏa filter (dùng để tính tổng trang).
+     */
+    public int countFiltered(String keyword, String status, String dateStr) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) "
+            + "FROM Bookings b "
+            + "LEFT JOIN Users u ON b.UserId = u.UserId "
+            + "JOIN Showtimes s ON b.ShowtimeId = s.ShowtimeId "
+            + "JOIN Movies m ON s.MovieId = m.MovieId "
+            + "WHERE 1=1 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ? OR CAST(b.BookingId AS NVARCHAR) = ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+            params.add(keyword.trim());
+        }
+        if (status != null && !status.isBlank()) {
+            sql.append("AND b.Status = ? ");
+            params.add(status);
+        }
+        if (dateStr != null && !dateStr.isBlank()) {
+            sql.append("AND CAST(s.StartTime AS DATE) = ? ");
+            params.add(dateStr);
+        }
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi đếm booking", e);
+        }
+    }
+
+    /**
+     * Search bookings for staff with optional filters + pagination.
+     * page bắt đầu từ 1.
+     */
+    public List<BookingRow> findAllFiltered(String keyword, String status, String dateStr,
+                                             int page, int pageSize) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT b.BookingId, b.Status, b.BookingType, b.TotalAmount, b.CreatedAt, "
+            + "u.UserId, u.FullName, u.Email, "
+            + "s.ShowtimeId, s.StartTime, m.Title AS MovieTitle "
+            + "FROM Bookings b "
+            + "LEFT JOIN Users u ON b.UserId = u.UserId "
+            + "JOIN Showtimes s ON b.ShowtimeId = s.ShowtimeId "
+            + "JOIN Movies m ON s.MovieId = m.MovieId "
+            + "WHERE 1=1 "
+        );
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ? OR CAST(b.BookingId AS NVARCHAR) = ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+            params.add(keyword.trim());
+        }
+        if (status != null && !status.isBlank()) {
+            sql.append("AND b.Status = ? ");
+            params.add(status);
+        }
+        if (dateStr != null && !dateStr.isBlank()) {
+            sql.append("AND CAST(s.StartTime AS DATE) = ? ");
+            params.add(dateStr);
+        }
+        int offset = (page - 1) * pageSize;
+        sql.append("ORDER BY b.CreatedAt DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(pageSize);
+
+        List<BookingRow> list = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    BookingRow row = new BookingRow();
+                    row.bookingId = rs.getInt("BookingId");
+                    row.status = rs.getString("Status");
+                    row.bookingType = rs.getString("BookingType");
+                    row.totalAmount = rs.getBigDecimal("TotalAmount");
+                    Timestamp ca = rs.getTimestamp("CreatedAt");
+                    row.createdAt = ca != null ? ca.toLocalDateTime() : null;
+                    int uid = rs.getInt("UserId");
+                    row.userId = rs.wasNull() ? null : uid;
+                    row.userFullName = rs.getString("FullName");
+                    row.userEmail = rs.getString("Email");
+                    row.showtimeId = rs.getInt("ShowtimeId");
+                    Timestamp st = rs.getTimestamp("StartTime");
+                    row.startTime = st != null ? st.toLocalDateTime() : null;
+                    row.movieTitle = rs.getString("MovieTitle");
+                    list.add(row);
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi tìm kiếm booking", e);
+        }
+        return list;
+    }
+
+    public static class BookingRow {
+        public int bookingId;
+        public String status;
+        public String bookingType;
+        public BigDecimal totalAmount;
+        public LocalDateTime createdAt;
+        public Integer userId;
+        public String userFullName;
+        public String userEmail;
+        public int showtimeId;
+        public LocalDateTime startTime;
+        public String movieTitle;
+
+        public int getBookingId() { return bookingId; }
+        public String getStatus() { return status; }
+        public String getBookingType() { return bookingType; }
+        public BigDecimal getTotalAmount() { return totalAmount; }
+        public LocalDateTime getCreatedAt() { return createdAt; }
+        public Integer getUserId() { return userId; }
+        public String getUserFullName() { return userFullName; }
+        public String getUserEmail() { return userEmail; }
+        public int getShowtimeId() { return showtimeId; }
+        public LocalDateTime getStartTime() { return startTime; }
+        public String getMovieTitle() { return movieTitle; }
+        /** true nếu suất chiếu chưa bắt đầu (có thể hủy vé) */
+        public boolean isBeforeShowtime() {
+            return startTime != null && startTime.isAfter(java.time.LocalDateTime.now());
         }
     }
 

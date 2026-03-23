@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="css/button.css">
     <link rel="stylesheet" href="css/table.css">
     <link rel="stylesheet" href="css/message.css">
+    <link rel="stylesheet" href="css/form.css">
+    <link rel="stylesheet" href="css/filter.css">
 </head>
 <body class="dashboard-layout">
 <jsp:include page="/components/header.jsp"/>
@@ -33,14 +35,14 @@
             </div>
 
             <div class="card" style="padding:1.25rem;margin-bottom:1rem;">
-                <form method="post" action="manager/ticket-checkin" class="search-filter-section" style="margin:0;">
-                    <div class="filter-group" style="flex:1;">
+                <form method="post" action="manager/ticket-checkin" class="search-filter-bar">
+                    <div class="filter-field filter-field--grow">
                         <label for="keyword" class="form-label">Mã đơn / Email</label>
                         <input type="text" id="keyword" name="keyword"
                                value="${keyword}"
                                class="form-input" placeholder="VD: 123 hoặc customer@example.com">
                     </div>
-                    <div style="display:flex;align-items:flex-end;gap:0.5rem;">
+                    <div class="filter-actions">
                         <button type="submit" class="btn btn-primary">Kiểm tra</button>
                     </div>
                 </form>

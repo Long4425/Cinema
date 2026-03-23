@@ -56,6 +56,7 @@ public class CustomerBookingHistoryServlet extends HttpServlet {
         req.setAttribute("showtimeMap", showtimeMap);
         req.setAttribute("seatsMap", seatsMap);
         req.setAttribute("cancellableMap", cancellableMap);
+        req.setAttribute("activeTab", "HISTORY");
 
         req.getRequestDispatcher("/profile/booking-history.jsp").forward(req, resp);
     }

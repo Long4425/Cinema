@@ -30,9 +30,9 @@
                     <a href="${ctx}/movies"
                        class="header__nav-link ${activeTab == 'MOVIES' ? 'header__nav-link--active' : ''}">Phim</a>
                 </li>
-                <c:if test="${not empty sessionScope.user && roleCode != 'CUSTOMER'}">
+                <c:if test="${not empty sessionScope.user && roleCode == 'CUSTOMER'}">
                     <li class="header__nav-item">
-                        <a href="${ctx}/bookings/history"
+                        <a href="${ctx}/profile/bookings"
                            class="header__nav-link ${activeTab == 'HISTORY' ? 'header__nav-link--active' : ''}">Lịch sử đặt vé</a>
                     </li>
                 </c:if>
