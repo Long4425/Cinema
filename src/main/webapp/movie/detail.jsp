@@ -70,28 +70,35 @@
                             </c:if>
 
                             <div class="showtime-section">
-                                <h2
-                                    style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.75rem; color:var(--text-dark);">
+                                <h2 style="font-size:1.25rem; font-weight:800; margin-bottom:0.75rem; color:var(--text-dark);">
                                     Lịch chiếu
                                 </h2>
                                 <c:choose>
-                                    <c:when test="${not empty showtimes}">
-                                        <div class="showtime-grid">
-                                            <c:forEach var="s" items="${showtimes}">
-                                                <button type="button"
-                                                    class="showtime-item"
-                                                    onclick="location.href='${pageContext.request.contextPath}/booking/seat-selection?id=${s.showtimeId}'">
-                                                    <strong><fmt:formatNumber value="${s.startTime.hour}" minIntegerDigits="2"/>:<fmt:formatNumber value="${s.startTime.minute}" minIntegerDigits="2"/></strong>
-                                                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-top:0.25rem;">
-                                                        ${s.room.roomName} (${s.room.roomType})
-                                                    </div>
-                                                </button>
-                                            </c:forEach>
-                                        </div>
+                                    <c:when test="${not empty showtimesByDate}">
+                                        <c:forEach var="entry" items="${showtimesByDate}">
+                                            <div style="margin-bottom:1rem;">
+                                                <div style="font-size:0.82rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">
+                                                    ${entry.key.dayOfMonth}/${entry.key.monthValue}/${entry.key.year}
+                                                </div>
+                                                <div class="showtime-grid">
+                                                    <c:forEach var="s" items="${entry.value}">
+                                                        <button type="button" class="showtime-item"
+                                                            onclick="location.href='${pageContext.request.contextPath}/booking/seat-selection?id=${s.showtimeId}'">
+                                                            <strong>
+                                                                <fmt:formatNumber value="${s.startTime.hour}" minIntegerDigits="2"/>:<fmt:formatNumber value="${s.startTime.minute}" minIntegerDigits="2"/>
+                                                            </strong>
+                                                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:500; margin-top:0.25rem;">
+                                                                ${s.room.roomName} (${s.room.roomType})
+                                                            </div>
+                                                        </button>
+                                                    </c:forEach>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
                                     </c:when>
                                     <c:otherwise>
                                         <div class="cinema-msg cinema-msg--info" style="margin-top:0.5rem;">
-                                            Hôm nay chưa có lịch chiếu cho phim này.
+                                            Không có lịch chiếu trong 7 ngày tới.
                                         </div>
                                     </c:otherwise>
                                 </c:choose>

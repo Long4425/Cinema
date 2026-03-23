@@ -69,6 +69,7 @@ public class VNPayReturnServlet extends HttpServlet {
         String message;
 
         int bookingId = extractBookingIdFromTxnRef(vnp_TxnRef);
+        boolean isExchange = vnp_TxnRef != null && vnp_TxnRef.startsWith("EXCH");
 
         try {
             Payment payment = (vnp_TxnRef != null && !vnp_TxnRef.isBlank())
@@ -77,26 +78,34 @@ public class VNPayReturnServlet extends HttpServlet {
 
             if (isValidSignature && "00".equals(vnp_ResponseCode) && "00".equals(vnp_TransactionStatus)) {
                 paymentStatus = "success";
-                message = "Thanh toán VNPay thành công.";
+                message = isExchange
+                        ? "Thanh toán phụ thu đổi vé thành công."
+                        : "Thanh toán VNPay thành công.";
 
                 if (payment != null) {
                     paymentDAO.updateStatus(payment.getPaymentId(), "Success", LocalDateTime.now());
                 }
-                if (bookingId > 0) {
+                if (!isExchange && bookingId > 0) {
+                    // Đặt vé thường: xác nhận booking + ghế
                     bookingDAO.updateStatus(bookingId, "Confirmed");
                     bookingSeatDAO.updateStatusByBooking(bookingId, "Confirmed");
                 }
+                // Đối với exchange: booking đã Confirmed từ trước, chỉ cập nhật payment là đủ
             } else {
                 paymentStatus = "failed";
-                message = "Thanh toán thất bại hoặc bị hủy. Bạn có thể thử lại.";
+                message = isExchange
+                        ? "Thanh toán phụ thu thất bại. Vé đã được đổi suất nhưng phụ thu chưa thanh toán — vui lòng thanh toán tại quầy."
+                        : "Thanh toán thất bại hoặc bị hủy. Bạn có thể thử lại.";
 
                 if (payment != null) {
                     paymentDAO.updateStatus(payment.getPaymentId(), "Failed", null);
                 }
-                if (bookingId > 0) {
+                if (!isExchange && bookingId > 0) {
                     bookingDAO.updateStatus(bookingId, "Cancelled");
                     bookingSeatDAO.updateStatusByBooking(bookingId, "Cancelled");
                 }
+                // Đối với exchange thất bại: KHÔNG rollback booking (suất đã đổi),
+                // phụ thu sẽ thu tại quầy
             }
         } catch (Exception e) {
             paymentStatus = "failed";
@@ -124,8 +133,13 @@ public class VNPayReturnServlet extends HttpServlet {
 
     private int extractBookingIdFromTxnRef(String txnRef) {
         try {
-            if (txnRef != null && txnRef.startsWith("BOOK")) {
-                String idPart = txnRef.substring(4);
+            if (txnRef == null) return 0;
+            // Hỗ trợ cả BOOK{id}_xxx (đặt vé) và EXCH{id}_xxx (đổi vé)
+            int prefixLen = 0;
+            if (txnRef.startsWith("BOOK")) prefixLen = 4;
+            else if (txnRef.startsWith("EXCH")) prefixLen = 4;
+            if (prefixLen > 0) {
+                String idPart = txnRef.substring(prefixLen);
                 int underscore = idPart.indexOf('_');
                 if (underscore > 0) {
                     return Integer.parseInt(idPart.substring(0, underscore));

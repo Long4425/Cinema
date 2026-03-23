@@ -78,6 +78,30 @@ public class BookingSeatDAO {
         }
     }
 
+    public void deleteByBooking(int bookingId) {
+        String sql = "DELETE FROM BookingSeats WHERE BookingId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi xóa booking seats theo booking", e);
+        }
+    }
+
+    public void updateShowtimeForBooking(int bookingId, int newShowtimeId, BigDecimal newSeatPrice) {
+        String sql = "UPDATE BookingSeats SET ShowtimeId = ?, SeatPrice = ? WHERE BookingId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newShowtimeId);
+            ps.setBigDecimal(2, defaultIfNull(newSeatPrice));
+            ps.setInt(3, bookingId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi cập nhật suất chiếu cho booking seats", e);
+        }
+    }
+
     public void updateStatusByBooking(int bookingId, String status) {
         String sql = "UPDATE BookingSeats SET Status = ?, HeldUntil = NULL WHERE BookingId = ?";
         try (Connection conn = dbContext.getConnection();

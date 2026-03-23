@@ -99,6 +99,9 @@
                                     <td>
                                         <div class="table-actions">
                                             <a href="booking/summary?bookingId=${b.bookingId}" class="btn btn-sm btn-secondary">Xem vé</a>
+                                            <c:if test="${exchangeableMap[b.bookingId]}">
+                                                <a href="booking/exchange?bookingId=${b.bookingId}" class="btn btn-sm btn-primary">Đổi suất</a>
+                                            </c:if>
                                             <c:if test="${cancellableMap[b.bookingId]}">
                                                 <button type="button" class="btn btn-sm btn-danger"
                                                         onclick="showCancelWarning(${b.bookingId})">Hủy vé</button>

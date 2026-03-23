@@ -100,6 +100,34 @@ public class ShowtimeDAO {
         return showtimes;
     }
 
+    /**
+     * Lấy tất cả suất chiếu của một phim trong 7 ngày tới (kể cả hôm nay),
+     * sắp xếp theo StartTime ASC để servlet group theo ngày.
+     */
+    public List<Showtime> findUpcomingWeekByMovie(int movieId) {
+        String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
+                "FROM Showtimes s " +
+                "JOIN Movies m ON s.MovieId = m.MovieId " +
+                "JOIN Rooms r ON s.RoomId = r.RoomId " +
+                "WHERE s.MovieId = ? " +
+                "AND s.StartTime >= GETDATE() " +
+                "AND s.StartTime < DATEADD(DAY, 7, CAST(GETDATE() AS DATE)) " +
+                "ORDER BY s.StartTime ASC";
+        List<Showtime> showtimes = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, movieId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    showtimes.add(mapShowtime(rs));
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy lịch chiếu 7 ngày tới theo phim", e);
+        }
+        return showtimes;
+    }
+
     public List<Showtime> findByMovie(int movieId) {
         String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
                      "FROM Showtimes s " +
@@ -118,6 +146,88 @@ public class ShowtimeDAO {
             }
         } catch (ClassNotFoundException | SQLException e) {
             throw new DataAccessException("Lỗi lấy lịch chiếu theo phim", e);
+        }
+        return showtimes;
+    }
+
+    /**
+     * Lấy danh sách ngày (duy nhất) còn có suất chiếu sắp tới của một phim, trừ suất đang xét.
+     * Chỉ lấy từ hôm nay trở đi (kể cả hôm nay nếu còn suất > 30 phút).
+     */
+    public List<LocalDate> findAvailableDatesByMovie(int movieId, int excludeShowtimeId) {
+        String sql = "SELECT DISTINCT CAST(s.StartTime AS DATE) AS ShowDate " +
+                "FROM Showtimes s " +
+                "WHERE s.MovieId = ? AND s.ShowtimeId <> ? " +
+                "AND s.StartTime > DATEADD(MINUTE, 30, GETDATE()) " +
+                "ORDER BY ShowDate ASC";
+        List<LocalDate> dates = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, movieId);
+            ps.setInt(2, excludeShowtimeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Date d = rs.getDate("ShowDate");
+                    if (d != null) dates.add(d.toLocalDate());
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy danh sách ngày chiếu theo phim", e);
+        }
+        return dates;
+    }
+
+    /**
+     * Lấy các suất chiếu của một phim trong một ngày cụ thể, trừ suất đang xét.
+     */
+    public List<Showtime> findUpcomingByMovieAndDate(int movieId, int excludeShowtimeId, LocalDate date) {
+        String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
+                "FROM Showtimes s " +
+                "JOIN Movies m ON s.MovieId = m.MovieId " +
+                "JOIN Rooms r ON s.RoomId = r.RoomId " +
+                "WHERE s.MovieId = ? AND s.ShowtimeId <> ? " +
+                "AND CAST(s.StartTime AS DATE) = ? " +
+                "AND s.StartTime > DATEADD(MINUTE, 30, GETDATE()) " +
+                "ORDER BY s.StartTime ASC";
+        List<Showtime> showtimes = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, movieId);
+            ps.setInt(2, excludeShowtimeId);
+            ps.setDate(3, Date.valueOf(date));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    showtimes.add(mapShowtime(rs));
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy suất chiếu theo phim và ngày", e);
+        }
+        return showtimes;
+    }
+
+    /**
+     * Lấy các suất chiếu sắp tới (chưa chiếu) của một phim, trừ suất đang xét.
+     */
+    public List<Showtime> findUpcomingByMovie(int movieId, int excludeShowtimeId) {
+        String sql = "SELECT s.*, m.Title, m.TitleEN, m.PosterUrl, r.RoomName, r.RoomType " +
+                "FROM Showtimes s " +
+                "JOIN Movies m ON s.MovieId = m.MovieId " +
+                "JOIN Rooms r ON s.RoomId = r.RoomId " +
+                "WHERE s.MovieId = ? AND s.ShowtimeId <> ? AND s.StartTime > GETDATE() " +
+                "ORDER BY s.StartTime ASC";
+        List<Showtime> showtimes = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, movieId);
+            ps.setInt(2, excludeShowtimeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    showtimes.add(mapShowtime(rs));
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi lấy suất chiếu sắp tới theo phim", e);
         }
         return showtimes;
     }

@@ -36,6 +36,17 @@ public class BookingFoodItemDAO {
         }
     }
 
+    public void deleteByBooking(int bookingId) {
+        String sql = "DELETE FROM BookingFoodItems WHERE BookingId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi xóa đồ ăn của booking", e);
+        }
+    }
+
     public List<BookingFoodItem> findByBookingWithFood(int bookingId) {
         String sql = "SELECT bfi.*, f.Name, f.Description, f.Price "
                 + "FROM BookingFoodItems bfi "

@@ -11,7 +11,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * UC-05 | View movie detail
@@ -40,10 +44,17 @@ public class MovieDetailServlet extends HttpServlet {
                 return;
             }
 
-            List<Showtime> showtimes = showtimeDAO.findByMovie(movieId);
+            List<Showtime> showtimes = showtimeDAO.findUpcomingWeekByMovie(movieId);
+
+            // Group theo ngày, giữ thứ tự
+            Map<LocalDate, List<Showtime>> showtimesByDate = new LinkedHashMap<>();
+            for (Showtime s : showtimes) {
+                LocalDate date = s.getStartTime().toLocalDate();
+                showtimesByDate.computeIfAbsent(date, k -> new ArrayList<>()).add(s);
+            }
 
             req.setAttribute("movie", movie);
-            req.setAttribute("showtimes", showtimes);
+            req.setAttribute("showtimesByDate", showtimesByDate);
             req.getRequestDispatcher("/movie/detail.jsp").forward(req, resp);
         } catch (NumberFormatException e) {
             resp.sendRedirect(req.getContextPath() + "/movies");

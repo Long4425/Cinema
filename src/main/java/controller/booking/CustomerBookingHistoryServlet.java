@@ -40,6 +40,7 @@ public class CustomerBookingHistoryServlet extends HttpServlet {
         Map<Integer, Showtime> showtimeMap = new HashMap<>();
         Map<Integer, List<BookingSeat>> seatsMap = new HashMap<>();
         Map<Integer, Boolean> cancellableMap = new HashMap<>();
+        Map<Integer, Boolean> exchangeableMap = new HashMap<>();
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -50,12 +51,18 @@ public class CustomerBookingHistoryServlet extends HttpServlet {
             boolean futureShow = s != null && s.getStartTime() != null && s.getStartTime().isAfter(now);
             boolean statusAllow = "Confirmed".equalsIgnoreCase(b.getStatus()) || "Pending".equalsIgnoreCase(b.getStatus());
             cancellableMap.put(b.getBookingId(), futureShow && statusAllow);
+            // Đổi suất: chỉ khi Confirmed và còn ít nhất 30 phút trước giờ chiếu
+            boolean exchangeable = "Confirmed".equalsIgnoreCase(b.getStatus())
+                    && s != null && s.getStartTime() != null
+                    && s.getStartTime().isAfter(now.plusMinutes(30));
+            exchangeableMap.put(b.getBookingId(), exchangeable);
         }
 
         req.setAttribute("bookings", bookings);
         req.setAttribute("showtimeMap", showtimeMap);
         req.setAttribute("seatsMap", seatsMap);
         req.setAttribute("cancellableMap", cancellableMap);
+        req.setAttribute("exchangeableMap", exchangeableMap);
         req.setAttribute("activeTab", "HISTORY");
 
         req.getRequestDispatcher("/profile/booking-history.jsp").forward(req, resp);

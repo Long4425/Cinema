@@ -102,6 +102,20 @@ public class BookingDAO {
         }
     }
 
+    public void updateShowtime(int bookingId, int newShowtimeId, BigDecimal newSubTotal, BigDecimal newTotalAmount) {
+        String sql = "UPDATE Bookings SET ShowtimeId = ?, SubTotal = ?, TotalAmount = ? WHERE BookingId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newShowtimeId);
+            ps.setBigDecimal(2, defaultIfNull(newSubTotal));
+            ps.setBigDecimal(3, defaultIfNull(newTotalAmount));
+            ps.setInt(4, bookingId);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new DataAccessException("Lỗi cập nhật suất chiếu cho booking", e);
+        }
+    }
+
     public void updateAmountsAndVoucher(int bookingId, BigDecimal subTotal, BigDecimal discountAmount,
                                         BigDecimal totalAmount, Integer voucherId) {
         String sql = "UPDATE Bookings SET SubTotal = ?, DiscountAmount = ?, TotalAmount = ?, VoucherId = ? "

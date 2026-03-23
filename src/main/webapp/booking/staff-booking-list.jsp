@@ -145,6 +145,11 @@
                                             <a href="booking/summary?bookingId=${row.bookingId}" class="btn btn-sm btn-secondary">Xem vé</a>
                                             <a href="manager/ticket-checkin?bookingId=${row.bookingId}" class="btn btn-sm btn-secondary">Soát vé</a>
 
+                                            <%-- Nút Đổi suất: chỉ khi Confirmed và chưa tới giờ chiếu --%>
+                                            <c:if test="${row.status == 'Confirmed' && row.beforeShowtime}">
+                                                <a href="booking/exchange?bookingId=${row.bookingId}" class="btn btn-sm btn-primary">Đổi suất</a>
+                                            </c:if>
+
                                             <%-- Nút Hủy vé: chỉ khi Confirmed/Pending VÀ chưa tới giờ chiếu --%>
                                             <c:if test="${(row.status == 'Confirmed' || row.status == 'Pending') && row.beforeShowtime}">
                                                 <button type="button" class="btn btn-sm btn-danger"
