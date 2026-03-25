@@ -164,9 +164,22 @@
                                     <c:otherwise>NHẬP MÃ VOUCHER</c:otherwise>
                                 </c:choose>
                             </div>
-                            <input type="text" id="voucherCode" name="voucherCode" class="form-input"
-                                   placeholder="Nhập mã voucher..." value="${param.voucherCode}">
+                            <div style="display:flex;gap:0.5rem;align-items:center;">
+                                <input type="text" id="voucherCode" name="voucherCode" class="form-input"
+                                       placeholder="Nhập mã voucher..."
+                                       value="${not empty appliedVoucherCode ? appliedVoucherCode : param.voucherCode}"
+                                       style="flex:1;">
+                                <button type="button" id="applyVoucherBtn"
+                                        style="white-space:nowrap;padding:0.5rem 0.9rem;border-radius:8px;border:1px solid var(--primary);background:var(--primary-light);color:var(--primary);font-weight:700;font-size:0.85rem;cursor:pointer;">
+                                    Áp dụng
+                                </button>
+                            </div>
 
+                            <c:if test="${not empty appliedVoucherCode}">
+                                <p style="color:#166534;font-size:0.85rem;margin-top:0.45rem;background:#f0fdf4;border:1px solid #86efac;padding:0.45rem 0.6rem;border-radius:10px;">
+                                    ✓ Áp dụng thành công: giảm <strong><fmt:formatNumber value="${appliedVoucherDiscount}" type="number" maxFractionDigits="0"/>₫</strong>
+                                </p>
+                            </c:if>
                             <c:if test="${not empty voucherError}">
                                 <p style="color:#b91c1c;font-size:0.85rem;margin-top:0.45rem;background:rgba(185,28,28,0.08);border:1px solid rgba(185,28,28,0.18);padding:0.45rem 0.6rem;border-radius:10px;">
                                     ${voucherError}
@@ -204,6 +217,11 @@
     knownVouchers['${v.code}'] = { type: '${v.discountType}', value: ${v.discountValue} };
     </c:forEach>
 
+    // Discount đã được server validate (voucher công khai hoặc voucher không có trong knownVouchers)
+    let serverAppliedCode = '${not empty appliedVoucherCode ? appliedVoucherCode : ""}';
+    let serverAppliedType = '${not empty appliedVoucherType ? appliedVoucherType : ""}';
+    let serverAppliedValue = ${not empty appliedVoucherValue ? appliedVoucherValue : 0};
+
     function fmt(n) {
         return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + '₫';
     }
@@ -224,10 +242,14 @@
         });
         const subtotal = (Number(ticketSubTotal) || 0) + foodTotal;
         let discount = 0;
-        const code = (voucherInput ? voucherInput.value : '').trim().toUpperCase();
-        const v = knownVouchers[code];
-        if (v) {
+        const code = (voucherInput ? voucherInput.value.trim().toUpperCase() : '');
+        const knownKey = Object.keys(knownVouchers).find(k => k.toUpperCase() === code);
+        if (knownKey) {
+            const v = knownVouchers[knownKey];
             discount = v.type === 'Percent' ? subtotal * v.value / 100 : v.value;
+        } else if (serverAppliedCode && code === serverAppliedCode.toUpperCase()) {
+            // Dùng discount đã được server validate
+            discount = serverAppliedType === 'Percent' ? subtotal * serverAppliedValue / 100 : serverAppliedValue;
         }
         discount = Math.max(0, Math.min(discount, subtotal));
         document.getElementById('foodTotalDisplay').textContent = fmt(foodTotal);
@@ -236,7 +258,16 @@
     }
 
     document.querySelectorAll('.qty-input').forEach(i => i.addEventListener('input', recalc));
-    if (voucherInput) voucherInput.addEventListener('input', recalc);
+    if (voucherInput) {
+        voucherInput.addEventListener('input', function() {
+            // Xóa server discount nếu user thay đổi mã
+            if (serverAppliedCode && this.value.trim().toUpperCase() !== serverAppliedCode.toUpperCase()) {
+                serverAppliedCode = '';
+                serverAppliedValue = 0;
+            }
+            recalc();
+        });
+    }
 
     document.querySelectorAll('.voucher-pick-item').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -254,9 +285,23 @@
             } else {
                 voucherInput.value = '';
             }
+            serverAppliedCode = '';
+            serverAppliedValue = 0;
             recalc();
         });
     });
+
+    // Nút Áp dụng: submit GET để server validate voucher
+    const applyBtn = document.getElementById('applyVoucherBtn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function () {
+            const code = voucherInput ? voucherInput.value.trim() : '';
+            if (!code) return;
+            const url = new URL(window.location.href);
+            url.searchParams.set('voucherCode', code);
+            window.location.href = url.toString();
+        });
+    }
 
     recalc();
 </script>

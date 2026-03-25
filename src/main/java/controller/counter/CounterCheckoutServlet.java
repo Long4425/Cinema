@@ -78,6 +78,30 @@ public class CounterCheckoutServlet extends HttpServlet {
             userDAO.findById(booking.getUserId()).ifPresent(c -> req.setAttribute("customer", c));
         }
 
+        // Validate voucher nếu có param (dùng cho preview discount)
+        String voucherCode = req.getParameter("voucherCode");
+        if (voucherCode != null && !voucherCode.isBlank()) {
+            voucherCode = voucherCode.trim();
+            BigDecimal subTotal = booking.getSubTotal() != null ? booking.getSubTotal() : BigDecimal.ZERO;
+            Voucher v = voucherDAO.findValidByCode(voucherCode, subTotal);
+            if (v == null) {
+                req.setAttribute("voucherError", "Mã voucher không hợp lệ hoặc không đáp ứng điều kiện.");
+            } else {
+                BigDecimal discount;
+                if ("Percent".equalsIgnoreCase(v.getDiscountType())) {
+                    discount = subTotal.multiply(v.getDiscountValue())
+                            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);
+                } else {
+                    discount = v.getDiscountValue().setScale(0, RoundingMode.HALF_UP);
+                }
+                if (discount.compareTo(subTotal) > 0) discount = subTotal;
+                req.setAttribute("appliedVoucherCode", voucherCode);
+                req.setAttribute("appliedVoucherDiscount", discount);
+                req.setAttribute("appliedVoucherType", v.getDiscountType());
+                req.setAttribute("appliedVoucherValue", v.getDiscountValue());
+            }
+        }
+
         req.setAttribute("booking", booking);
         req.setAttribute("bookingSeats", bookingSeats);
         req.setAttribute("foodItems", foodItems);
