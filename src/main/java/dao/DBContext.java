@@ -16,22 +16,17 @@ import java.sql.SQLException;
 
 public class DBContext {
 
-    // Thông tin cấu hình Database
-    private static final String SERVER_NAME = "localhost";
-    private static final String DB_NAME = "CinemaDB";
-    private static final String PORT = "1433";
-    private static final String USER_ID = "sa";
-    private static final String PASSWORD = "123456";
-
     public Connection getConnection() throws ClassNotFoundException, SQLException {
-        // Cấu trúc chuỗi kết nối chuẩn cho SQL Server
-        String url = "jdbc:sqlserver://" + SERVER_NAME + ":" + PORT + ";databaseName=" + DB_NAME
-                + ";encrypt=true;trustServerCertificate=true;";
-        // encrypt=true;trustServerCertificate=true;: Cần thiết cho Driver phiên bản mới
-        // (10.x trở lên)
+        String server = System.getProperty("DB_SERVER", "localhost");
+        String port   = System.getProperty("DB_PORT",   "1433");
+        String dbName = System.getProperty("DB_NAME",   "CinemaDB");
+        String user   = System.getProperty("DB_USER",   "sa");
+        String pass   = System.getProperty("DB_PASS",   "123456");
 
+        String url = "jdbc:sqlserver://" + server + ":" + port + ";databaseName=" + dbName
+                + ";encrypt=true;trustServerCertificate=true;";
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        return DriverManager.getConnection(url, USER_ID, PASSWORD);
+        return DriverManager.getConnection(url, user, pass);
     }
 
     // Hàm main để test kết nối ngay lập tức

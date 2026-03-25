@@ -47,4 +47,5 @@ Thumbs.db
 
 ### Sensitive config (credentials)
 src/main/webapp/META-INF/context.xml
+.env
 
