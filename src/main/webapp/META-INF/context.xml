@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Context path="/Cinema">
-    <Parameter name="google.client.id"     value="${GOOGLE_CLIENT_ID}"/>
-    <Parameter name="google.client.secret" value="${GOOGLE_CLIENT_SECRET}"/>
-    <Parameter name="smtp.user"            value="${SMTP_USER}"/>
-    <Parameter name="smtp.pass"            value="${SMTP_PASS}"/>
-</Context>
