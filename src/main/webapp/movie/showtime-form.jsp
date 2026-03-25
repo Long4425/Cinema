@@ -64,17 +64,19 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
                 <label for="startTime" class="form-label">Thời gian bắt đầu</label>
-                <input type="datetime-local" name="startTime" id="startTime" class="form-input" value="${showtime.startTime}" required>
+                <input type="datetime-local" name="startTime" id="startTime" class="form-input"
+                       value="${showtime.startTime != null ? showtime.startTime.toString().substring(0,16) : ''}" required>
             </div>
             <div class="form-group">
                 <label for="endTime" class="form-label">Thời gian kết thúc</label>
-                <input type="datetime-local" name="endTime" id="endTime" class="form-input" value="${showtime.endTime}" required readonly>
+                <input type="datetime-local" name="endTime" id="endTime" class="form-input"
+                       value="${showtime.endTime != null ? showtime.endTime.toString().substring(0,16) : ''}" required>
             </div>
         </div>
 
         <div class="form-group">
             <label for="basePrice" class="form-label">Giá cơ bản (₫)</label>
-            <input type="number" name="basePrice" id="basePrice" class="form-input" value="${showtime.basePrice}" min="1" step="1000" required>
+            <input type="number" name="basePrice" id="basePrice" class="form-input" value="${showtime.basePrice}" min="1000" step="1000" required>
             <span class="form-hint">Giá phải lớn hơn 0.</span>
         </div>
 
@@ -107,25 +109,42 @@
             const opt = movieSelect.options[movieSelect.selectedIndex];
             if (!opt) return;
             const duration = parseInt(opt.getAttribute('data-duration') || '0', 10);
-            const startVal = startInput.value;
+            const startVal = startInput.value; // "yyyy-MM-ddTHH:mm"
             if (!startVal || !duration || isNaN(duration)) return;
 
-            // datetime-local: "yyyy-MM-ddTHH:mm"
-            const dt = new Date(startVal);
-            if (isNaN(dt.getTime())) return;
-            dt.setMinutes(dt.getMinutes() + duration);
+            // Parse thủ công để tránh timezone offset của browser
+            const [datePart, timePart] = startVal.split('T');
+            if (!datePart || !timePart) return;
+            const [yyyy, MM, dd] = datePart.split('-').map(Number);
+            const [hh, mm] = timePart.split(':').map(Number);
+            if ([yyyy, MM, dd, hh, mm].some(isNaN)) return;
 
+            // Tính tổng phút rồi cộng duration
+            let totalMinutes = hh * 60 + mm + duration;
+            let extraDays = Math.floor(totalMinutes / (24 * 60));
+            totalMinutes = totalMinutes % (24 * 60);
+            const endHH = Math.floor(totalMinutes / 60);
+            const endMM = totalMinutes % 60;
+
+            // Cộng ngày nếu qua đêm
+            const date = new Date(yyyy, MM - 1, dd + extraDays);
             const pad = n => String(n).padStart(2, '0');
-            const yyyy = dt.getFullYear();
-            const MM = pad(dt.getMonth() + 1);
-            const dd = pad(dt.getDate());
-            const hh = pad(dt.getHours());
-            const mm = pad(dt.getMinutes());
-            endInput.value = `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+            const endDate = date.getFullYear() + '-' + pad(date.getMonth()+1) + '-' + pad(date.getDate());
+            endInput.value = endDate + 'T' + pad(endHH) + ':' + pad(endMM);
         }
 
         movieSelect && movieSelect.addEventListener('change', calcEndTime);
-        startInput && startInput.addEventListener('change', calcEndTime);
+        ['change', 'input', 'blur'].forEach(ev => startInput && startInput.addEventListener(ev, calcEndTime));
+
+        // Polling nhẹ để bắt khi browser tự fill từng phần của datetime-local
+        let lastStart = '';
+        setInterval(function () {
+            if (startInput && startInput.value !== lastStart) {
+                lastStart = startInput.value;
+                calcEndTime();
+            }
+        }, 300);
+
         // tính lần đầu khi mở form
         calcEndTime();
     })();
