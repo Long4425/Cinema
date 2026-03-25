@@ -45,3 +45,6 @@ nb-configuration.xml
 .DS_Store
 Thumbs.db
 
+### Sensitive config (credentials)
+src/main/webapp/META-INF/context.xml
+

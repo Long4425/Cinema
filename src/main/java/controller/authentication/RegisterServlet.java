@@ -37,6 +37,10 @@ public class RegisterServlet extends HttpServlet {
                 baseUrl += ":" + req.getServerPort();
             }
             String redirectUri = baseUrl + req.getContextPath() + "/auth/google/callback";
+
+            // Lưu lại redirectUri để callback dùng đúng giá trị đã được tạo ở bước auth.
+            req.getSession(true).setAttribute("google.redirectUri", redirectUri);
+
             req.setAttribute("googleAuthUrl", "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id="
                     + clientId + "&redirect_uri=" + java.net.URLEncoder.encode(redirectUri, java.nio.charset.StandardCharsets.UTF_8)
                     + "&scope=email%20profile");

@@ -67,9 +67,12 @@ public class ForgotPasswordServlet extends HttpServlet {
         baseUrl += req.getContextPath();
         String resetLink = baseUrl + "/reset-password?token=" + token;
 
-        boolean sent = EmailUtil.sendPasswordResetEmail(user.getEmail(), resetLink);
+        boolean sent = EmailUtil.sendPasswordResetEmail(user.getEmail(), resetLink, getServletContext());
         if (!sent) {
-            req.setAttribute("error", "Không thể gửi email. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau.");
+            String mailErr = (String) getServletContext().getAttribute("mail.error");
+            req.setAttribute("error", (mailErr != null && !mailErr.isBlank())
+                    ? mailErr
+                    : "Không thể gửi email. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau.");
             req.setAttribute("email", email);
             req.getRequestDispatcher("/authentication/forgot-password.jsp").forward(req, resp);
             return;

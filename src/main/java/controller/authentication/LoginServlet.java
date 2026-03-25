@@ -44,7 +44,7 @@ public class LoginServlet extends HttpServlet {
             }
             return;
         }
-        String clientId = getInitParameter("google.client.id");
+        String clientId = getServletContext().getInitParameter("google.client.id");
         if (clientId == null) clientId = System.getenv("GOOGLE_CLIENT_ID");
         if (clientId != null) {
             String baseUrl = req.getScheme() + "://" + req.getServerName();
@@ -52,6 +52,13 @@ public class LoginServlet extends HttpServlet {
                 baseUrl += ":" + req.getServerPort();
             }
             String redirectUri = baseUrl + req.getContextPath() + "/auth/google/callback";
+
+            // Lưu lại redirectUri để callback dùng đúng giá trị đã được tạo ở bước auth.
+            if (session == null) {
+                session = req.getSession(true);
+            }
+            session.setAttribute("google.redirectUri", redirectUri);
+
             String googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id="
                     + clientId + "&redirect_uri=" + java.net.URLEncoder.encode(redirectUri, java.nio.charset.StandardCharsets.UTF_8)
                     + "&scope=email%20profile";

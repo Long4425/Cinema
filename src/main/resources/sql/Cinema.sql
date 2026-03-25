@@ -190,7 +190,7 @@ CREATE TABLE AuditLogs (
 
 -- 14. PASSWORD RESET TOKENS (UC-03 Forgot Password)
 CREATE TABLE PasswordResetTokens (
-    Token     VARCHAR(64) PRIMARY KEY,
+    Token     VARCHAR(200) PRIMARY KEY,
     UserId    INT NOT NULL REFERENCES Users(UserId),
     ExpiresAt DATETIME NOT NULL
 );

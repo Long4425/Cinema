@@ -34,9 +34,14 @@ public class GoogleCallbackServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String code = req.getParameter("code");
         String error = req.getParameter("error");
+        String errorDescription = req.getParameter("error_description");
 
         if (error != null) {
-            req.setAttribute("error", "Đăng nhập Google thất bại: " + error);
+            String msg = (errorDescription != null && !errorDescription.isBlank())
+                    ? errorDescription
+                    : error;
+            // Hiển thị đúng `error_description` Google trả về để dễ debug cấu hình OAuth.
+            req.setAttribute("error", "Đăng nhập Google thất bại: " + msg);
             req.getRequestDispatcher("/authentication/login.jsp").forward(req, resp);
             return;
         }
@@ -47,9 +52,9 @@ public class GoogleCallbackServlet extends HttpServlet {
             return;
         }
 
-        String clientId = getInitParameter("google.client.id");
+        String clientId = getServletContext().getInitParameter("google.client.id");
         if (clientId == null) clientId = System.getenv("GOOGLE_CLIENT_ID");
-        String clientSecret = getInitParameter("google.client.secret");
+        String clientSecret = getServletContext().getInitParameter("google.client.secret");
         if (clientSecret == null) clientSecret = System.getenv("GOOGLE_CLIENT_SECRET");
 
         if (clientId == null || clientSecret == null) {
@@ -59,9 +64,18 @@ public class GoogleCallbackServlet extends HttpServlet {
         }
 
         String redirectUri = getRedirectUri(req);
-        String accessToken = exchangeCodeForToken(code, clientId, clientSecret, redirectUri);
+        System.out.println("[Google OAuth] redirect_uri = " + redirectUri);
+        String accessToken;
+        try {
+            accessToken = exchangeCodeForToken(code, clientId, clientSecret, redirectUri);
+        } catch (IOException ex) {
+            // Token endpoint cũng có thể trả về error_description; hiển thị trực tiếp.
+            req.setAttribute("error", "Không thể xác thực với Google. redirect_uri=" + redirectUri + ". " + ex.getMessage());
+            req.getRequestDispatcher("/authentication/login.jsp").forward(req, resp);
+            return;
+        }
         if (accessToken == null) {
-            req.setAttribute("error", "Không thể xác thực với Google.");
+            req.setAttribute("error", "Không thể xác thực với Google. redirect_uri=" + redirectUri);
             req.getRequestDispatcher("/authentication/login.jsp").forward(req, resp);
             return;
         }
@@ -118,6 +132,15 @@ public class GoogleCallbackServlet extends HttpServlet {
     }
 
     private String getRedirectUri(HttpServletRequest req) {
+        // Lấy redirectUri đã dùng khi tạo googleAuthUrl (tránh mismatch localhost vs 127.0.0.1).
+        var session = req.getSession(false);
+        if (session != null) {
+            Object saved = session.getAttribute("google.redirectUri");
+            if (saved instanceof String s && !s.isBlank()) {
+                // Không xóa ngay để log/debug; có thể xóa sau khi flow ổn định.
+                return s;
+            }
+        }
         String baseUrl = req.getScheme() + "://" + req.getServerName();
         if (req.getServerPort() != 80 && req.getServerPort() != 443) {
             baseUrl += ":" + req.getServerPort();
@@ -141,7 +164,28 @@ public class GoogleCallbackServlet extends HttpServlet {
         }
         int responseCode = conn.getResponseCode();
         if (responseCode != 200) {
-            return null;
+            try {
+                java.io.InputStream es = conn.getErrorStream();
+                String errBody = es != null ? new Scanner(es, StandardCharsets.UTF_8).useDelimiter("\\A").next() : "(no error stream)";
+                String errorVal = extractJsonString(errBody, "error");
+                String errorDesc = extractJsonString(errBody, "error_description");
+
+                String truncated = errBody;
+                if (truncated != null && truncated.length() > 500) {
+                    truncated = truncated.substring(0, 500) + "...";
+                }
+                // Trả về thông tin chi tiết để UI hiển thị đúng message từ Google.
+                StringBuilder sb = new StringBuilder();
+                sb.append("token endpoint HTTP ").append(responseCode);
+                if (errorVal != null) sb.append(" (error=").append(errorVal).append(")");
+                if (errorDesc != null) sb.append(": ").append(errorDesc);
+                else if (truncated != null) sb.append(". Response=").append(truncated);
+                throw new IOException(sb.toString());
+            } catch (IOException ioEx) {
+                throw ioEx;
+            } catch (Exception ex) {
+                throw new IOException(ex.getMessage());
+            }
         }
         String json = new Scanner(conn.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
         return extractJsonString(json, "access_token");
@@ -161,12 +205,12 @@ public class GoogleCallbackServlet extends HttpServlet {
     }
 
     private String extractJsonString(String json, String key) {
-        String search = "\"" + key + "\":\"";
-        int start = json.indexOf(search);
-        if (start == -1) return null;
-        start += search.length();
-        int end = json.indexOf("\"", start);
-        return end > start ? json.substring(start, end) : null;
+        if (json == null || key == null || key.isBlank()) return null;
+        // Parse tolerant: cho phép có/không khoảng trắng quanh dấu ":".
+        // Ví dụ hợp lệ: "error_description":"Bad Request" hoặc "error_description": "Bad Request"
+        String pattern = "\""+java.util.regex.Pattern.quote(key)+"\"\\s*:\\s*\"(.*?)\"";
+        var matcher = java.util.regex.Pattern.compile(pattern, java.util.regex.Pattern.DOTALL).matcher(json);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     private static class GoogleUserInfo {
