@@ -137,6 +137,7 @@
 
         const selected = new Set();
         let isDragging = false;
+        let dragMoved = false;
         let dragAdd = true;
 
         function updateBulkInput() {
@@ -159,6 +160,7 @@
             const seat = e.target.closest('.seat-tile');
             if (!seat) return;
             isDragging = true;
+            dragMoved = false;
             const currentlySelected = seat.classList.contains('seat-tile--selected');
             dragAdd = !currentlySelected;
             toggleSeat(seat, dragAdd);
@@ -170,20 +172,13 @@
             if (!isDragging) return;
             const seat = e.target.closest('.seat-tile');
             if (!seat) return;
+            dragMoved = true;
             toggleSeat(seat, dragAdd);
             updateBulkInput();
         });
 
         document.addEventListener('mouseup', function () {
             isDragging = false;
-        });
-
-        grid.addEventListener('click', function (e) {
-            const seat = e.target.closest('.seat-tile');
-            if (!seat || isDragging) return;
-            const currentlySelected = seat.classList.contains('seat-tile--selected');
-            toggleSeat(seat, !currentlySelected);
-            updateBulkInput();
         });
     })();
 </script>
