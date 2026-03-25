@@ -35,7 +35,7 @@ public class DBContext {
             DBContext db = new DBContext();
             Connection conn = db.getConnection();
             if (conn != null) {
-                System.out.println("Ket noi thanh cong toi " + DB_NAME);
+                System.out.println("Ket noi thanh cong toi " + System.getProperty("DB_NAME", "CinemaDB"));
             } else {
                 System.out.println("Ket noi that bai!");
             }
