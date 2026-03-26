@@ -137,8 +137,19 @@ public class MovieManagementServlet extends HttpServlet {
                     .replaceAll("[^a-zA-Z0-9-_]", "_");
             String fileName = safeBase + "_" + System.currentTimeMillis() + ext;
 
-            String imagesDirPath = req.getServletContext().getRealPath("/images");
-            if (imagesDirPath == null) return null;
+            // getRealPath() trỏ đến deploy folder (target/), ảnh sẽ mất khi rebuild.
+            // Lưu thẳng vào src/main/webapp/images/ để ảnh tồn tại vĩnh viễn trong source.
+            String webappPath = req.getServletContext().getRealPath("/");
+            String imagesDirPath;
+            if (webappPath != null && webappPath.contains("target")) {
+                // Đang chạy từ Maven build — tìm ngược lên src/main/webapp/images
+                imagesDirPath = webappPath.replaceAll("(?i)(.*target).*", "$1")
+                        .replace("\\", "/")
+                        .replaceAll("/+$", "")
+                        + "/../src/main/webapp/images";
+            } else {
+                imagesDirPath = (webappPath != null ? webappPath : "") + "images";
+            }
 
             File imagesDir = new File(imagesDirPath);
             if (!imagesDir.exists() && !imagesDir.mkdirs()) return null;
